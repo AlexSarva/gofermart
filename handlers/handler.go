@@ -1,10 +1,10 @@
 package handlers
 
 import (
-	"AlexSarva/gofermart/crypto"
 	"AlexSarva/gofermart/internal/app"
 	"bytes"
 	"compress/gzip"
+	"encoding/json"
 	"errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -13,10 +13,19 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"time"
 )
 
 var ErrNotValidCookie = errors.New("valid cookie does not found")
+
+// Дополнительный обработчик ответа
+func messageResponse(w http.ResponseWriter, message, ContentType string, httpStatusCode int) {
+	w.Header().Set("Content-Type", ContentType)
+	w.WriteHeader(httpStatusCode)
+	resp := make(map[string]string)
+	resp["message"] = message
+	jsonResp, _ := json.Marshal(resp)
+	w.Write(jsonResp)
+}
 
 // Обработка сжатых запросов
 func readBodyBytes(r *http.Request) (io.ReadCloser, error) {
@@ -59,27 +68,6 @@ func PingDB(database *app.Database) http.HandlerFunc {
 
 var gzipContentTypes = "application/x-gzip, application/javascript, application/json, text/css, text/html, text/plain, text/xml"
 
-func GenerateCookie(userID uuid.UUID) http.Cookie {
-	session := crypto.Encrypt(userID, crypto.SecretKey)
-	expiration := time.Now().Add(365 * 24 * time.Hour)
-	cookie := http.Cookie{Name: "session", Value: session, Expires: expiration, Path: "/"}
-	return cookie
-}
-
-func getCookie(r *http.Request) (uuid.UUID, error) {
-	cookie, cookieErr := r.Cookie("session")
-	if cookieErr != nil {
-		log.Println(cookieErr)
-		return uuid.UUID{}, ErrNotValidCookie
-	}
-	userID, cookieDecryptErr := crypto.Decrypt(cookie.Value, crypto.SecretKey)
-	if cookieDecryptErr != nil {
-		return uuid.UUID{}, cookieDecryptErr
-	}
-	return userID, nil
-
-}
-
 func CookieHandler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		_, userIDErr := getCookie(r)
@@ -101,10 +89,11 @@ func MyHandler(database *app.Database) *chi.Mux {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	r.Use(CookieHandler)
+	//r.Use(CookieHandler)
 	r.Use(middleware.AllowContentEncoding("gzip"))
 	r.Use(middleware.AllowContentType("application/json", "text/plain", "application/x-gzip"))
 	r.Use(middleware.Compress(5, gzipContentTypes))
+	r.Post("/api/user/register", UserRegistration(database))
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("welcome"))
 	})
