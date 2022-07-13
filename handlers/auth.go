@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // UserRegistration регистрация нового пользователя
@@ -46,13 +47,13 @@ func UserRegistration(database *app.Database) http.HandlerFunc {
 		}
 
 		userID := uuid.New()
-		userCookie := GenerateCookie(userID)
+		userCookie, userCookieExp := GenerateCookie(userID)
 		hashedPassword, bcrypteErr := bcrypt.GenerateFromPassword([]byte(user.Password), 4)
 		if bcrypteErr != nil {
 			log.Println(bcrypteErr)
 		}
 
-		user.ID, user.Password, user.Cookie = userID, string(hashedPassword), userCookie.String()
+		user.ID, user.Password, user.Cookie, user.CookieExp = userID, string(hashedPassword), userCookie.String(), userCookieExp
 
 		newUserErr := database.Repo.NewUser(&user)
 		if newUserErr != nil {
@@ -118,23 +119,27 @@ func UserAuthentication(database *app.Database) http.HandlerFunc {
 			messageResponse(w, "User unauthorized: "+cryptErr.Error(), "application/json", http.StatusUnauthorized)
 			return
 		}
+		// TODO Предусмотреть обновление куки
+		if userDB.CookieExp.Before(time.Now()) {
+			log.Println("cookie expired")
+		}
 
 		w.Header().Add("Set-Cookie", userDB.Cookie)
 		messageResponse(w, "user successfully authenticated", "application/json", http.StatusOK)
 	}
 }
 
-func CookieHandler(next http.Handler) http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
-		_, userIDErr := getCookie(r)
-		if userIDErr != nil {
-			log.Println(userIDErr)
-			userCookie := GenerateCookie(uuid.New())
-			log.Println(userCookie)
-			r.AddCookie(&userCookie)
-			http.SetCookie(w, &userCookie)
-		}
-		next.ServeHTTP(w, r)
-	}
-	return http.HandlerFunc(fn)
-}
+//func CookieHandler(next http.Handler) http.Handler {
+//	fn := func(w http.ResponseWriter, r *http.Request) {
+//		_, userIDErr := getCookie(r)
+//		if userIDErr != nil {
+//			log.Println(userIDErr)
+//			userCookie := GenerateCookie(uuid.New())
+//			log.Println(userCookie)
+//			r.AddCookie(&userCookie)
+//			http.SetCookie(w, &userCookie)
+//		}
+//		next.ServeHTTP(w, r)
+//	}
+//	return http.HandlerFunc(fn)
+//}

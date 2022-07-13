@@ -22,6 +22,7 @@ func NewPostgresDBConnection(config string) *PostgresDB {
 		username text primary key,
 		passwd text,
 		cookie text,
+		cookie_expires timestamp,
 		created timestamp default now()
 	);
 	delete from public.users where username = 'test';`
@@ -40,7 +41,7 @@ func (d *PostgresDB) Ping() bool {
 
 func (d *PostgresDB) NewUser(user *models.User) error {
 	tx := d.database.MustBegin()
-	resInsert, resErr := tx.NamedExec("INSERT INTO public.users (id, username, passwd, cookie) VALUES (:id, :username, :passwd, :cookie) on conflict (username) do nothing ", &user)
+	resInsert, resErr := tx.NamedExec("INSERT INTO public.users (id, username, passwd, cookie, cookie_expires) VALUES (:id, :username, :passwd, :cookie, :cookie_expires) on conflict (username) do nothing ", &user)
 	if resErr != nil {
 		return resErr
 	}

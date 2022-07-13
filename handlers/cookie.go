@@ -8,11 +8,11 @@ import (
 	"time"
 )
 
-func GenerateCookie(userID uuid.UUID) http.Cookie {
+func GenerateCookie(userID uuid.UUID) (http.Cookie, time.Time) {
 	session := crypto.Encrypt(userID, crypto.SecretKey)
 	expiration := time.Now().Add(365 * 24 * time.Hour)
 	cookie := http.Cookie{Name: "session", Value: session, Expires: expiration, Path: "/"}
-	return cookie
+	return cookie, expiration
 }
 
 func getCookie(r *http.Request) (uuid.UUID, error) {
