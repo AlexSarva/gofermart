@@ -8,7 +8,6 @@ import (
 	"errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/google/uuid"
 	"io"
 	"io/ioutil"
 	"log"
@@ -68,21 +67,6 @@ func PingDB(database *app.Database) http.HandlerFunc {
 
 var gzipContentTypes = "application/x-gzip, application/javascript, application/json, text/css, text/html, text/plain, text/xml"
 
-func CookieHandler(next http.Handler) http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
-		_, userIDErr := getCookie(r)
-		if userIDErr != nil {
-			log.Println(userIDErr)
-			userCookie := GenerateCookie(uuid.New())
-			log.Println(userCookie)
-			r.AddCookie(&userCookie)
-			http.SetCookie(w, &userCookie)
-		}
-		next.ServeHTTP(w, r)
-	}
-	return http.HandlerFunc(fn)
-}
-
 func MyHandler(database *app.Database) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
@@ -94,6 +78,7 @@ func MyHandler(database *app.Database) *chi.Mux {
 	r.Use(middleware.AllowContentType("application/json", "text/plain", "application/x-gzip"))
 	r.Use(middleware.Compress(5, gzipContentTypes))
 	r.Post("/api/user/register", UserRegistration(database))
+	r.Post("/api/user/login", UserAuthentication(database))
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("welcome"))
 	})

@@ -54,3 +54,13 @@ func (d *PostgresDB) NewUser(user *models.User) error {
 	}
 	return nil
 }
+
+func (d *PostgresDB) GetUser(username string) (*models.User, error) {
+	var user models.User
+	err := d.database.Get(&user, "SELECT id, username, passwd, cookie FROM public.users WHERE username=$1", username)
+	if err != nil {
+		log.Println(err)
+		return &models.User{}, err
+	}
+	return &user, err
+}
