@@ -3,7 +3,9 @@ package handlers
 import (
 	"AlexSarva/gofermart/internal/app"
 	"AlexSarva/gofermart/models"
+	"AlexSarva/gofermart/storage/storagepg"
 	"AlexSarva/gofermart/utils/luhn"
+	"encoding/json"
 	"io"
 	"net/http"
 	"strconv"
@@ -74,5 +76,39 @@ func PostOrder(database *app.Database) http.HandlerFunc {
 
 		messageResponse(w, "new order number accepted for processing", "application/json", http.StatusAccepted)
 		return
+	}
+}
+
+func GetOrders(database *app.Database) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		headerContentType := r.Header.Get("Content-Length")
+		if len(headerContentType) != 0 {
+			messageResponse(w, "Content-Length is not equal 0", "application/json", http.StatusBadRequest)
+			return
+		}
+
+		userID, cookieErr := GetCookie(r)
+		if cookieErr != nil {
+			messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
+			return
+		}
+
+		orders, ordersErr := database.Repo.GetOrders(userID)
+		if ordersErr != nil {
+			if ordersErr == storagepg.ErrNoValues {
+				messageResponse(w, "no data to answer: "+storagepg.ErrNoValues.Error(), "application/json", http.StatusNoContent)
+				return
+			}
+			messageResponse(w, "Internal Server Error: "+ordersErr.Error(), "application/json", http.StatusInternalServerError)
+			return
+		}
+
+		ordersList, ordersListErr := json.Marshal(orders)
+		if ordersListErr != nil {
+			panic(ordersListErr)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(ordersList)
 	}
 }

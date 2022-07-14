@@ -4,12 +4,14 @@ import (
 	"AlexSarva/gofermart/models"
 	"database/sql"
 	"errors"
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"log"
 )
 
 var ErrDuplicatePK = errors.New("duplicate PK")
+var ErrNoValues = errors.New("no values from select")
 
 type PostgresDB struct {
 	database *sqlx.DB
@@ -24,17 +26,17 @@ func NewPostgresDBConnection(config string) *PostgresDB {
 		passwd text,
 		cookie text,
 		cookie_expires timestamp,
-		created timestamp default now()
+		created timestamptz default now()
 	);
-    delete from public.orders where user_id in (select user_id from public.users where username like 'test%');
-	delete from public.users where username like 'test%';
 	CREATE TABLE if not exists public.orders (
 		user_id uuid references public.users(id),
 		order_num int8 primary key,
 		accrual int8,
 		status text,
-		created timestamp default now()
+		created timestamptz default now()
 	);
+    delete from public.orders where user_id in (select user_id from public.users where username like 'test%');
+	delete from public.users where username like 'test%';
 
 `
 	db.MustExec(schemas)
@@ -69,7 +71,7 @@ func (d *PostgresDB) NewUser(user *models.User) error {
 
 func (d *PostgresDB) GetUser(username string) (*models.User, error) {
 	var user models.User
-	err := d.database.Get(&user, "SELECT id, username, passwd, cookie FROM public.users WHERE username=$1", username)
+	err := d.database.Get(&user, "SELECT id, username, passwd, cookie, cookie_expires FROM public.users WHERE username=$1", username)
 	if err != nil {
 		log.Println(err)
 		return &models.User{}, err
@@ -92,7 +94,10 @@ func (d *PostgresDB) CheckOrder(orderNum int) (*models.Order, error) {
 
 func (d *PostgresDB) NewOrder(order *models.Order) error {
 	tx := d.database.MustBegin()
-	resInsert, resErr := tx.NamedExec("INSERT INTO public.orders (user_id, order_num) VALUES (:user_id, :order_num) on conflict (order_num) do nothing ", &order)
+	log.Printf("%+v\n", order)
+	order.Status = "NEW"
+	log.Printf("%+v\n", order)
+	resInsert, resErr := tx.NamedExec("INSERT INTO public.orders (user_id, order_num, status) VALUES (:user_id, :order_num, :status) on conflict (order_num) do nothing ", &order)
 	if resErr != nil {
 		return resErr
 	}
@@ -105,4 +110,16 @@ func (d *PostgresDB) NewOrder(order *models.Order) error {
 		return commitErr
 	}
 	return nil
+}
+
+func (d *PostgresDB) GetOrders(userID uuid.UUID) ([]*models.OrderDB, error) {
+	var orders []*models.OrderDB
+	err := d.database.Select(&orders, "SELECT order_num, accrual, status, created FROM public.orders where user_id=$1 order by created", userID)
+	if len(orders) == 0 {
+		return orders, ErrNoValues
+	}
+	if err != nil {
+		return orders, err
+	}
+	return orders, nil
 }
