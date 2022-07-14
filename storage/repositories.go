@@ -9,7 +9,8 @@ type Repo interface {
 	Ping() bool
 	NewUser(user *models.User) error
 	GetUser(username string) (*models.User, error)
-	CheckOrder(orderNum int) (*models.Order, error)
+	CheckOrder(orderNum string) (*models.Order, error)
 	NewOrder(order *models.Order) error
 	GetOrders(userID uuid.UUID) ([]*models.OrderDB, error)
+	GetBalance(userID uuid.UUID) (*models.Balance, error)
 }

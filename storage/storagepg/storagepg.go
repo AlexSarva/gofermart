@@ -19,26 +19,7 @@ type PostgresDB struct {
 
 func NewPostgresDBConnection(config string) *PostgresDB {
 	db, err := sqlx.Connect("postgres", config)
-	var schemas = `
-	CREATE TABLE if not exists public.users (
-		id uuid primary key ,
-		username text unique ,
-		passwd text,
-		cookie text,
-		cookie_expires timestamp,
-		created timestamptz default now()
-	);
-	CREATE TABLE if not exists public.orders (
-		user_id uuid references public.users(id),
-		order_num int8 primary key,
-		accrual int8,
-		status text,
-		created timestamptz default now()
-	);
-    delete from public.orders where user_id in (select user_id from public.users where username like 'test%');
-	delete from public.users where username like 'test%';
-
-`
+	var schemas = ddl
 	db.MustExec(schemas)
 	if err != nil {
 		log.Println(err)
@@ -79,7 +60,7 @@ func (d *PostgresDB) GetUser(username string) (*models.User, error) {
 	return &user, err
 }
 
-func (d *PostgresDB) CheckOrder(orderNum int) (*models.Order, error) {
+func (d *PostgresDB) CheckOrder(orderNum string) (*models.Order, error) {
 	var order models.Order
 	err := d.database.Get(&order, "SELECT user_id, order_num FROM public.orders WHERE order_num=$1", orderNum)
 	if err != nil {
@@ -122,4 +103,14 @@ func (d *PostgresDB) GetOrders(userID uuid.UUID) ([]*models.OrderDB, error) {
 		return orders, err
 	}
 	return orders, nil
+}
+
+func (d *PostgresDB) GetBalance(userID uuid.UUID) (*models.Balance, error) {
+	var balance models.Balance
+	err := d.database.Get(&balance, "SELECT withdraw, current FROM public.balance WHERE user_id=$1", userID)
+	if err != nil {
+		return &balance, err
+	}
+
+	return &balance, nil
 }

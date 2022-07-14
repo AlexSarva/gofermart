@@ -6,6 +6,7 @@ import (
 	"AlexSarva/gofermart/storage/storagepg"
 	"AlexSarva/gofermart/utils/luhn"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -44,29 +45,31 @@ func PostOrder(database *app.Database) http.HandlerFunc {
 			return
 		}
 
-		orderDB, orderDBErr := database.Repo.CheckOrder(orderNum)
-		if orderDBErr != nil {
-			messageResponse(w, "Internal Server Error: "+orderDBErr.Error(), "application/json", http.StatusInternalServerError)
-			return
-		}
-
-		if orderDB.OrderNum == orderNum && orderDB.UserID != userID {
-			messageResponse(w, "the order number has already been uploaded by another user", "application/json", http.StatusConflict)
-			return
-		}
-
-		if orderDB.OrderNum == orderNum && orderDB.UserID == userID {
-			messageResponse(w, "order number has already been uploaded by this user", "application/json", http.StatusOK)
-			return
-		}
-
 		if !luhn.Valid(orderNum) {
 			messageResponse(w, "invalid order number format", "application/json", http.StatusUnprocessableEntity)
 			return
 		}
 
+		orderNumStr := fmt.Sprintf("%d", orderNum)
+
+		orderDB, orderDBErr := database.Repo.CheckOrder(orderNumStr)
+		if orderDBErr != nil {
+			messageResponse(w, "Internal Server Error: "+orderDBErr.Error(), "application/json", http.StatusInternalServerError)
+			return
+		}
+
+		if orderDB.OrderNum == orderNumStr && orderDB.UserID != userID {
+			messageResponse(w, "the order number has already been uploaded by another user", "application/json", http.StatusConflict)
+			return
+		}
+
+		if orderDB.OrderNum == orderNumStr && orderDB.UserID == userID {
+			messageResponse(w, "order number has already been uploaded by this user", "application/json", http.StatusOK)
+			return
+		}
+
 		var order models.Order
-		order.UserID, order.OrderNum = userID, orderNum
+		order.UserID, order.OrderNum = userID, orderNumStr
 
 		insertErr := database.Repo.NewOrder(&order)
 		if insertErr != nil {
