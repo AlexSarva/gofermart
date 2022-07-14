@@ -118,16 +118,17 @@ func TestUserAuthentication(t *testing.T) {
 	database, dbErr := app.NewStorage("user=sarva password=77oFnWFF dbname=shortener sslmode=disable")
 
 	userID := uuid.New()
-	cookie := GenerateCookie(userID)
+	cookie, cookieExp := GenerateCookie(userID)
 	hashedPassword, bcrypteErr := bcrypt.GenerateFromPassword([]byte("123"), 4)
 	if bcrypteErr != nil {
 		log.Println(bcrypteErr)
 	}
 	user := models.User{
-		ID:       userID,
-		Username: "test",
-		Password: string(hashedPassword),
-		Cookie:   cookie.String(),
+		ID:        userID,
+		Username:  "test",
+		Password:  string(hashedPassword),
+		Cookie:    cookie.String(),
+		CookieExp: cookieExp,
 	}
 
 	database.Repo.NewUser(&user)

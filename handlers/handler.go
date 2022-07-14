@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
-	"errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"io"
@@ -13,8 +12,6 @@ import (
 	"log"
 	"net/http"
 )
-
-var ErrNotValidCookie = errors.New("valid cookie does not found")
 
 // Дополнительный обработчик ответа
 func messageResponse(w http.ResponseWriter, message, ContentType string, httpStatusCode int) {
@@ -27,6 +24,7 @@ func messageResponse(w http.ResponseWriter, message, ContentType string, httpSta
 }
 
 // Обработка сжатых запросов
+// TODO вынести в middleware
 func readBodyBytes(r *http.Request) (io.ReadCloser, error) {
 	// GZIP decode
 	if len(r.Header["Content-Encoding"]) > 0 && r.Header["Content-Encoding"][0] == "gzip" {
@@ -37,8 +35,6 @@ func readBodyBytes(r *http.Request) (io.ReadCloser, error) {
 		}
 		defer r.Body.Close()
 
-		log.Println("compressed request")
-
 		newR, gzErr := gzip.NewReader(ioutil.NopCloser(bytes.NewBuffer(bodyBytes)))
 		if gzErr != nil {
 			log.Println(gzErr)
@@ -48,7 +44,6 @@ func readBodyBytes(r *http.Request) (io.ReadCloser, error) {
 
 		return newR, nil
 	} else {
-		log.Println("no compressed request")
 		return r.Body, nil
 	}
 }
@@ -79,6 +74,7 @@ func MyHandler(database *app.Database) *chi.Mux {
 	r.Use(middleware.Compress(5, gzipContentTypes))
 	r.Post("/api/user/register", UserRegistration(database))
 	r.Post("/api/user/login", UserAuthentication(database))
+	r.Post("/api/user/orders", PostOrder(database))
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("welcome"))
 	})

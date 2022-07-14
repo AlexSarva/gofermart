@@ -34,7 +34,7 @@ func Decrypt(cookie string, secret []byte) (uuid.UUID, error) {
 	data, err = hex.DecodeString(cookie)
 	if err != nil {
 		log.Println(err)
-		return uuid.New(), ErrNotValidSing
+		return uuid.UUID{}, ErrNotValidSing
 	}
 	id, idErr := uuid.FromBytes(data[:16])
 	if idErr != nil {
@@ -47,6 +47,6 @@ func Decrypt(cookie string, secret []byte) (uuid.UUID, error) {
 	if hmac.Equal(sign, data[16:]) {
 		return id, nil
 	} else {
-		return uuid.New(), ErrNotValidSing
+		return uuid.UUID{}, ErrNotValidSing
 	}
 }

@@ -128,18 +128,3 @@ func UserAuthentication(database *app.Database) http.HandlerFunc {
 		messageResponse(w, "user successfully authenticated", "application/json", http.StatusOK)
 	}
 }
-
-//func CookieHandler(next http.Handler) http.Handler {
-//	fn := func(w http.ResponseWriter, r *http.Request) {
-//		_, userIDErr := getCookie(r)
-//		if userIDErr != nil {
-//			log.Println(userIDErr)
-//			userCookie := GenerateCookie(uuid.New())
-//			log.Println(userCookie)
-//			r.AddCookie(&userCookie)
-//			http.SetCookie(w, &userCookie)
-//		}
-//		next.ServeHTTP(w, r)
-//	}
-//	return http.HandlerFunc(fn)
-//}

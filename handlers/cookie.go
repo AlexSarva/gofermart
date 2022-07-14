@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"AlexSarva/gofermart/crypto"
+	"errors"
 	"github.com/google/uuid"
-	"log"
 	"net/http"
 	"time"
 )
+
+var ErrNotValidCookie = errors.New("valid cookie does not found")
 
 func GenerateCookie(userID uuid.UUID) (http.Cookie, time.Time) {
 	session := crypto.Encrypt(userID, crypto.SecretKey)
@@ -15,10 +17,9 @@ func GenerateCookie(userID uuid.UUID) (http.Cookie, time.Time) {
 	return cookie, expiration
 }
 
-func getCookie(r *http.Request) (uuid.UUID, error) {
+func GetCookie(r *http.Request) (uuid.UUID, error) {
 	cookie, cookieErr := r.Cookie("session")
 	if cookieErr != nil {
-		log.Println(cookieErr)
 		return uuid.UUID{}, ErrNotValidCookie
 	}
 	userID, cookieDecryptErr := crypto.Decrypt(cookie.Value, crypto.SecretKey)
