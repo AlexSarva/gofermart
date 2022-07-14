@@ -13,4 +13,5 @@ type Repo interface {
 	NewOrder(order *models.Order) error
 	GetOrders(userID uuid.UUID) ([]*models.OrderDB, error)
 	GetBalance(userID uuid.UUID) (*models.Balance, error)
+	NewWithdraw(withdraw *models.Withdraw) error
 }

@@ -75,9 +75,7 @@ func (d *PostgresDB) CheckOrder(orderNum string) (*models.Order, error) {
 
 func (d *PostgresDB) NewOrder(order *models.Order) error {
 	tx := d.database.MustBegin()
-	log.Printf("%+v\n", order)
 	order.Status = "NEW"
-	log.Printf("%+v\n", order)
 	resInsert, resErr := tx.NamedExec("INSERT INTO public.orders (user_id, order_num, status) VALUES (:user_id, :order_num, :status) on conflict (order_num) do nothing ", &order)
 	if resErr != nil {
 		return resErr
@@ -113,4 +111,21 @@ func (d *PostgresDB) GetBalance(userID uuid.UUID) (*models.Balance, error) {
 	}
 
 	return &balance, nil
+}
+
+func (d *PostgresDB) NewWithdraw(withdraw *models.Withdraw) error {
+	tx := d.database.MustBegin()
+	resInsert, resErr := tx.NamedExec("INSERT INTO public.withdraw (user_id, order_num, withdraw) VALUES (:user_id, :order_num, :withdraw) on conflict (order_num) do nothing ", &withdraw)
+	if resErr != nil {
+		return resErr
+	}
+	affectedRows, _ := resInsert.RowsAffected()
+	if affectedRows == 0 {
+		return ErrDuplicatePK
+	}
+	commitErr := tx.Commit()
+	if commitErr != nil {
+		return commitErr
+	}
+	return nil
 }

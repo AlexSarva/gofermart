@@ -21,6 +21,19 @@ type OrderDB struct {
 }
 
 type Balance struct {
-	Current  interface{} `json:"current" db:"current"`
-	Withdraw interface{} `json:"withdraw" db:"withdraw"`
+	Current  float32 `json:"current" db:"current"`
+	Withdraw float32 `json:"withdraw" db:"withdraw"`
+}
+
+type Withdraw struct {
+	UserID   uuid.UUID `json:"user_id,omitempty" db:"user_id"`
+	OrderNum string    `json:"order" db:"order_num"`
+	Withdraw float32   `json:"sum" db:"withdraw"`
+	Created  time.Time `json:"uploaded_at" db:"created"`
+}
+
+type WithdrawBD struct {
+	OrderNum string    `json:"order" db:"order_num"`
+	Withdraw float32   `json:"sum" db:"withdraw"`
+	Created  time.Time `json:"uploaded_at" db:"created"`
 }

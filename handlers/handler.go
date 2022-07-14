@@ -77,6 +77,7 @@ func MyHandler(database *app.Database) *chi.Mux {
 	r.Post("/api/user/orders", PostOrder(database))
 	r.Get("/api/user/orders", GetOrders(database))
 	r.Get("/api/user/balance", GetBalance(database))
+	r.Post("/api/user/balance/withdraw", Withdraw(database))
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("welcome"))
 	})
