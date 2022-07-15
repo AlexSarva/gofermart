@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var ErrNoCookie = errors.New("No cookie")
+var ErrNoCookie = errors.New("no cookie")
 
 func ParseCookie(cookieStr string) (string, error) {
 	cookieInfo := strings.Split(cookieStr, "; ")
