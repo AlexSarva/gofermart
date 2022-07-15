@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-var InternalServerError = errors.New("InternalServerError")
+var ErrInternalServer = errors.New("ErrInternalServer")
 
 type ProcessingClient struct {
 	Client *gentleman.Client
@@ -44,12 +44,12 @@ func (pc *ProcessingClient) GetOrder(orderNum string) (models.ProcessingOrder, e
 	switch res.StatusCode {
 	case http.StatusInternalServerError:
 		log.Printf("Internas server error: %d\n", res.StatusCode)
-		return order, InternalServerError
+		return order, ErrInternalServer
 	case http.StatusTooManyRequests:
 		log.Printf("Too Many Requests: %d\n", res.StatusCode)
 		time.Sleep(time.Second * 60)
 	case http.StatusOK:
-		if UnmarshErr := json.Unmarshal(res.Bytes(), &order); err != nil {
+		if UnmarshErr := json.Unmarshal(res.Bytes(), &order); UnmarshErr != nil {
 			return order, UnmarshErr
 		}
 	}

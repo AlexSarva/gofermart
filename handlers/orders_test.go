@@ -161,14 +161,14 @@ func TestPostOrder(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			reqBody := []byte(tt.requestBody)
 			reqURL := tt.requestPath + tt.request
-			var request *http.Request
-			request = httptest.NewRequest(tt.requestMethod, reqURL, bytes.NewBuffer(reqBody))
+			request := httptest.NewRequest(tt.requestMethod, reqURL, bytes.NewBuffer(reqBody))
 			request.Header.Set("Content-Type", tt.requestContentType)
 			request.Header.Set("Cookie", tt.requestCookie)
 			// создаём новый Recorder
 			w := httptest.NewRecorder()
 			Handler.ServeHTTP(w, request)
 			resp := w.Result()
+			defer resp.Body.Close()
 			// Проверяем StatusCode
 			respStatusCode := resp.StatusCode
 			wantStatusCode := tt.want.code
@@ -310,14 +310,14 @@ func TestGetOrders(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			reqBody := []byte(tt.requestBody)
 			reqURL := tt.requestPath + tt.request
-			var request *http.Request
-			request = httptest.NewRequest(tt.requestMethod, reqURL, bytes.NewBuffer(reqBody))
+			request := httptest.NewRequest(tt.requestMethod, reqURL, bytes.NewBuffer(reqBody))
 			request.Header.Set("Content-Type", tt.requestContentType)
 			request.Header.Set("Cookie", tt.requestCookie)
 			// создаём новый Recorder
 			w := httptest.NewRecorder()
 			Handler.ServeHTTP(w, request)
 			resp := w.Result()
+			defer resp.Body.Close()
 			// Проверяем StatusCode
 			respStatusCode := resp.StatusCode
 			wantStatusCode := tt.want.code

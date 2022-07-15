@@ -99,13 +99,13 @@ func TestUserRegistration(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			reqBody := []byte(tt.requestBody)
 			reqURL := tt.requestPath + tt.request
-			var request *http.Request
-			request = httptest.NewRequest(tt.requestMethod, reqURL, bytes.NewBuffer(reqBody))
+			request := httptest.NewRequest(tt.requestMethod, reqURL, bytes.NewBuffer(reqBody))
 			request.Header.Set("Content-Type", tt.requestContentType)
 			// создаём новый Recorder
 			w := httptest.NewRecorder()
 			Handler.ServeHTTP(w, request)
 			resp := w.Result()
+			defer resp.Body.Close()
 			// Проверяем StatusCode
 			respStatusCode := resp.StatusCode
 			wantStatusCode := tt.want.code
@@ -226,13 +226,13 @@ func TestUserAuthentication(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			reqBody := []byte(tt.requestBody)
 			reqURL := tt.requestPath + tt.request
-			var request *http.Request
-			request = httptest.NewRequest(tt.requestMethod, reqURL, bytes.NewBuffer(reqBody))
+			request := httptest.NewRequest(tt.requestMethod, reqURL, bytes.NewBuffer(reqBody))
 			request.Header.Set("Content-Type", tt.requestContentType)
 			// создаём новый Recorder
 			w := httptest.NewRecorder()
 			Handler.ServeHTTP(w, request)
 			resp := w.Result()
+			defer resp.Body.Close()
 			// Проверяем StatusCode
 			respStatusCode := resp.StatusCode
 			wantStatusCode := tt.want.code

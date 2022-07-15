@@ -73,12 +73,11 @@ func PostOrder(database *app.Database) http.HandlerFunc {
 
 		insertErr := database.Repo.NewOrder(&order)
 		if insertErr != nil {
-			messageResponse(w, "Internal Server Error: "+orderDBErr.Error(), "application/json", http.StatusInternalServerError)
+			messageResponse(w, "Internal Server Error: "+insertErr.Error(), "application/json", http.StatusInternalServerError)
 			return
 		}
 
 		messageResponse(w, "new order number accepted for processing", "application/json", http.StatusAccepted)
-		return
 	}
 }
 
