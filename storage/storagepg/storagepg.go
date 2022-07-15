@@ -4,6 +4,7 @@ import (
 	"AlexSarva/gofermart/models"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -140,4 +141,39 @@ func (d *PostgresDB) GetAllWithdraw(userID uuid.UUID) ([]*models.WithdrawBD, err
 		return withdraws, err
 	}
 	return withdraws, nil
+}
+
+func (d *PostgresDB) GetOrdersForProcessing() ([]string, error) {
+	var orders []string
+	err := d.database.Select(&orders, "select order_num from public.orders where status in ('NEW','PROCESSING') order by created;")
+	if len(orders) == 0 {
+		return orders, ErrNoValues
+	}
+	if err != nil {
+		return orders, err
+	}
+	return orders, nil
+}
+
+func (d *PostgresDB) UpdateOrder(order models.ProcessingOrder) {
+	tx := d.database.MustBegin()
+	log.Printf("%+v\n", order)
+	query := fmt.Sprintf("update public.orders set status = '%s', accrual = %d where order_num = '%s';", order.Status, order.Accrual, order.OrderNum)
+	log.Println(query)
+	ret, err := tx.Exec(query)
+	if err != nil {
+		log.Printf("update failed, err:%v\n", err)
+		return
+	}
+	n, AffectErr := ret.RowsAffected() // Number of rows affected by the operation
+	if AffectErr != nil {
+		fmt.Printf("get RowsAffected failed, err:%v\n", AffectErr)
+		return
+	}
+	commitErr := tx.Commit()
+	if commitErr != nil {
+		fmt.Printf("commit failed, err:%v\n", commitErr)
+		return
+	}
+	fmt.Printf("update success, affected rows:%d\n", n)
 }

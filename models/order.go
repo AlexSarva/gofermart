@@ -37,3 +37,15 @@ type WithdrawBD struct {
 	Withdraw float32   `json:"sum" db:"withdraw"`
 	Created  time.Time `json:"processed_at" db:"created"`
 }
+
+type ProcessingOrder struct {
+	OrderNum string      `json:"order"`
+	Status   string      `json:"status"`
+	Accrual  interface{} `json:"accrual,omitempty"`
+}
+
+type TestType struct {
+	Name       string `json:"name"`
+	Diameter   string `json:"diameter"`
+	Population string `json:"population"`
+}

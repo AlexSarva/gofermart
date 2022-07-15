@@ -15,4 +15,6 @@ type Repo interface {
 	GetBalance(userID uuid.UUID) (*models.Balance, error)
 	NewWithdraw(withdraw *models.Withdraw) error
 	GetAllWithdraw(userID uuid.UUID) ([]*models.WithdrawBD, error)
+	GetOrdersForProcessing() ([]string, error)
+	UpdateOrder(order models.ProcessingOrder)
 }
