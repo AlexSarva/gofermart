@@ -25,10 +25,7 @@ func GetOrdersToProcessing(database app.Database, ordersCh chan string) {
 
 func GetProcessedInfo(client *ProcessingClient, ordersCh chan string, procesedCh chan models.ProcessingOrder) {
 	for order := range ordersCh {
-		orderInfo, orderInfoErr := client.GetOrder(order)
-		if orderInfoErr != nil {
-			log.Println(orderInfoErr)
-		} else {
+		if orderInfo, orderInfoErr := client.GetOrder(order); orderInfoErr == nil {
 			procesedCh <- orderInfo
 		}
 	}

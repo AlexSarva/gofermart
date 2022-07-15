@@ -5,10 +5,12 @@ import (
 	"errors"
 	"github.com/google/uuid"
 	"net/http"
+	"strings"
 	"time"
 )
 
 var ErrNotValidCookie = errors.New("valid cookie does not found")
+var ErrNoAuth = errors.New("no Bearer token")
 
 func GenerateCookie(userID uuid.UUID) (http.Cookie, time.Time) {
 	session := crypto.Encrypt(userID, crypto.SecretKey)
@@ -28,4 +30,21 @@ func GetCookie(r *http.Request) (uuid.UUID, error) {
 	}
 	return userID, nil
 
+}
+
+func GetToken(r *http.Request) (uuid.UUID, error) {
+	auth := r.Header.Get("Authorization")
+	if len(auth) == 0 {
+		return uuid.UUID{}, ErrNoAuth
+	}
+	tokenValue := strings.Split(auth, "Bearer ")
+	if len(tokenValue) < 2 {
+		return uuid.UUID{}, ErrNoAuth
+	}
+	authToken := tokenValue[1]
+	userID, tokenDecryptErr := crypto.Decrypt(authToken, crypto.SecretKey)
+	if tokenDecryptErr != nil {
+		return uuid.UUID{}, tokenDecryptErr
+	}
+	return userID, nil
 }

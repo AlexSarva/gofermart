@@ -20,11 +20,18 @@ func GetBalance(database *app.Database) http.HandlerFunc {
 			return
 		}
 
-		userID, cookieErr := GetCookie(r)
-		if cookieErr != nil {
-			messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
+		// Проверка авторизации по токену
+		userID, tokenErr := GetToken(r)
+		if tokenErr != nil {
+			messageResponse(w, "User unauthorized: "+tokenErr.Error(), "application/json", http.StatusUnauthorized)
 			return
 		}
+
+		//userID, cookieErr := GetCookie(r)
+		//if cookieErr != nil {
+		//	messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
+		//	return
+		//}
 
 		balance, balanceErr := database.Repo.GetBalance(userID)
 		if balanceErr != nil {
@@ -52,11 +59,18 @@ func Withdraw(database *app.Database) http.HandlerFunc {
 			return
 		}
 
-		userID, cookieErr := GetCookie(r)
-		if cookieErr != nil {
-			messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
+		// Проверка авторизации по токену
+		userID, tokenErr := GetToken(r)
+		if tokenErr != nil {
+			messageResponse(w, "User unauthorized: "+tokenErr.Error(), "application/json", http.StatusUnauthorized)
 			return
 		}
+
+		//userID, cookieErr := GetCookie(r)
+		//if cookieErr != nil {
+		//	messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
+		//	return
+		//}
 
 		var withdraw models.Withdraw
 		var unmarshalErr *json.UnmarshalTypeError
@@ -125,16 +139,25 @@ func GetAllWithdraws(database *app.Database) http.HandlerFunc {
 			return
 		}
 
-		userID, cookieErr := GetCookie(r)
-		if cookieErr != nil {
-			messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
+		// Проверка авторизации по токену
+		userID, tokenErr := GetToken(r)
+		if tokenErr != nil {
+			messageResponse(w, "User unauthorized: "+tokenErr.Error(), "application/json", http.StatusUnauthorized)
 			return
 		}
+
+		//userID, cookieErr := GetCookie(r)
+		//if cookieErr != nil {
+		//	messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
+		//	return
+		//}
 
 		withdraws, withdrawsErr := database.Repo.GetAllWithdraw(userID)
 		if withdrawsErr != nil {
 			if withdrawsErr == storagepg.ErrNoValues {
-				messageResponse(w, "no data to answer: "+storagepg.ErrNoValues.Error(), "application/json", http.StatusNoContent)
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusNoContent)
+				//messageResponse(w, "no data to answer: "+storagepg.ErrNoValues.Error(), "application/json", http.StatusNoContent)
 				return
 			}
 			messageResponse(w, "Internal Server Error: "+withdrawsErr.Error(), "application/json", http.StatusInternalServerError)

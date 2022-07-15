@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 )
 
 func TestPostOrder(t *testing.T) {
@@ -31,6 +30,7 @@ func TestPostOrder(t *testing.T) {
 		Cookie:    cookie.String(),
 		CookieExp: cookieExp,
 	}
+	userToken := fmt.Sprintf("Bearer %s", cookie.Value)
 
 	database.Repo.NewUser(&user)
 
@@ -47,7 +47,7 @@ func TestPostOrder(t *testing.T) {
 		Cookie:    subCookie.String(),
 		CookieExp: subCookieExp,
 	}
-
+	subUserToken := fmt.Sprintf("Bearer %s", subCookie.Value)
 	database.Repo.NewUser(&subUser)
 
 	if dbErr != nil {
@@ -73,6 +73,7 @@ func TestPostOrder(t *testing.T) {
 		requestAcceptEncoding  string
 		requestContentEncoding string
 		requestCookie          string
+		requestToken           string
 		want                   want
 	}{
 		{
@@ -82,6 +83,7 @@ func TestPostOrder(t *testing.T) {
 			requestBody:        "12345678903", // новый номер заказа принят в обработку
 			requestPath:        "/api/user/orders",
 			requestCookie:      cookie.String(),
+			requestToken:       userToken,
 			want: want{
 				code: http.StatusAccepted,
 			},
@@ -93,6 +95,7 @@ func TestPostOrder(t *testing.T) {
 			requestBody:        "12345678903", // номер заказа уже был загружен этим пользователем
 			requestPath:        "/api/user/orders",
 			requestCookie:      cookie.String(),
+			requestToken:       userToken,
 			want: want{
 				code: http.StatusOK,
 			},
@@ -104,6 +107,7 @@ func TestPostOrder(t *testing.T) {
 			requestBody:        "12345-678903", // неверный формат номера заказа
 			requestPath:        "/api/user/orders",
 			requestCookie:      cookie.String(),
+			requestToken:       userToken,
 			want: want{
 				code: http.StatusUnprocessableEntity,
 			},
@@ -115,6 +119,7 @@ func TestPostOrder(t *testing.T) {
 			requestBody:        "12345-678903",
 			requestPath:        "/api/user/orders",
 			requestCookie:      cookie.String(),
+			requestToken:       userToken,
 			want: want{
 				code: http.StatusBadRequest,
 			},
@@ -126,6 +131,7 @@ func TestPostOrder(t *testing.T) {
 			requestBody:        "1234567890", // не проходит проверку по Луну
 			requestPath:        "/api/user/orders",
 			requestCookie:      cookie.String(),
+			requestToken:       userToken,
 			want: want{
 				code: http.StatusUnprocessableEntity,
 			},
@@ -148,6 +154,7 @@ func TestPostOrder(t *testing.T) {
 			requestBody:        "12345678903", // номер заказа уже был загружен другим пользователем
 			requestPath:        "/api/user/orders",
 			requestCookie:      subCookie.String(),
+			requestToken:       subUserToken,
 			want: want{
 				code: http.StatusConflict,
 			},
@@ -164,6 +171,9 @@ func TestPostOrder(t *testing.T) {
 			request := httptest.NewRequest(tt.requestMethod, reqURL, bytes.NewBuffer(reqBody))
 			request.Header.Set("Content-Type", tt.requestContentType)
 			request.Header.Set("Cookie", tt.requestCookie)
+			if len(tt.requestToken) > 0 {
+				request.Header.Set("Authorization", tt.requestToken)
+			}
 			// создаём новый Recorder
 			w := httptest.NewRecorder()
 			Handler.ServeHTTP(w, request)
@@ -193,7 +203,7 @@ func TestGetOrders(t *testing.T) {
 		Cookie:    cookie.String(),
 		CookieExp: cookieExp,
 	}
-
+	userToken := fmt.Sprintf("Bearer %s", cookie.Value)
 	database.Repo.NewUser(&user)
 
 	subUserID := uuid.New()
@@ -209,23 +219,23 @@ func TestGetOrders(t *testing.T) {
 		Cookie:    subCookie.String(),
 		CookieExp: subCookieExp,
 	}
-
+	subUserToken := fmt.Sprintf("Bearer %s", subCookie.Value)
 	database.Repo.NewUser(&subUser)
 
-	badCookie := http.Cookie{
-		Name:       "session",
-		Value:      "3362fd24cb78497d8af5429d69a268a3ce6179ea95f9e206f6cb2bd0c538d72c97341ecab445310cdf0ff57f09b9f2b",
-		Path:       "/",
-		Domain:     "",
-		Expires:    time.Now().Add(time.Hour * 1),
-		RawExpires: "",
-		MaxAge:     0,
-		Secure:     false,
-		HttpOnly:   false,
-		SameSite:   0,
-		Raw:        "",
-		Unparsed:   nil,
-	}
+	//badCookie := http.Cookie{
+	//	Name:       "session",
+	//	Value:      "3362fd24cb78497d8af5429d69a268a3ce6179ea95f9e206f6cb2bd0c538d72c97341ecab445310cdf0ff57f09b9f2b",
+	//	Path:       "/",
+	//	Domain:     "",
+	//	Expires:    time.Now().Add(time.Hour * 1),
+	//	RawExpires: "",
+	//	MaxAge:     0,
+	//	Secure:     false,
+	//	HttpOnly:   false,
+	//	SameSite:   0,
+	//	Raw:        "",
+	//	Unparsed:   nil,
+	//}
 
 	if dbErr != nil {
 		log.Fatal(dbErr)
@@ -250,6 +260,7 @@ func TestGetOrders(t *testing.T) {
 		requestAcceptEncoding  string
 		requestContentEncoding string
 		requestCookie          string
+		requestToken           string
 		want                   want
 	}{
 		{
@@ -259,6 +270,7 @@ func TestGetOrders(t *testing.T) {
 			requestBody:        "12345678903", // новый номер заказа принят в обработку
 			requestPath:        "/api/user/orders",
 			requestCookie:      cookie.String(),
+			requestToken:       userToken,
 			want: want{
 				code: http.StatusAccepted,
 			},
@@ -270,6 +282,7 @@ func TestGetOrders(t *testing.T) {
 			requestBody:        "1230", // новый номер заказа принят в обработку
 			requestPath:        "/api/user/orders",
 			requestCookie:      cookie.String(),
+			requestToken:       userToken,
 			want: want{
 				code: http.StatusAccepted,
 			},
@@ -279,6 +292,7 @@ func TestGetOrders(t *testing.T) {
 			requestMethod: http.MethodGet,
 			requestPath:   "/api/user/orders", // получение имеющихся заказов
 			requestCookie: cookie.String(),
+			requestToken:  userToken,
 			want: want{
 				code: http.StatusOK,
 			},
@@ -288,6 +302,7 @@ func TestGetOrders(t *testing.T) {
 			requestMethod: http.MethodGet,
 			requestPath:   "/api/user/orders", // нет заказов в базе
 			requestCookie: subCookie.String(),
+			requestToken:  subUserToken,
 			want: want{
 				code: http.StatusNoContent,
 			},
@@ -296,7 +311,6 @@ func TestGetOrders(t *testing.T) {
 			name:          fmt.Sprintf("%s negative #1", http.MethodGet),
 			requestMethod: http.MethodGet,
 			requestPath:   "/api/user/orders",
-			requestCookie: badCookie.String(),
 			want: want{
 				code: http.StatusUnauthorized,
 			},
@@ -313,6 +327,9 @@ func TestGetOrders(t *testing.T) {
 			request := httptest.NewRequest(tt.requestMethod, reqURL, bytes.NewBuffer(reqBody))
 			request.Header.Set("Content-Type", tt.requestContentType)
 			request.Header.Set("Cookie", tt.requestCookie)
+			if len(tt.requestToken) > 0 {
+				request.Header.Set("Authorization", tt.requestToken)
+			}
 			// создаём новый Recorder
 			w := httptest.NewRecorder()
 			Handler.ServeHTTP(w, request)

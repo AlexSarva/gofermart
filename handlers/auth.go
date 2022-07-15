@@ -4,6 +4,7 @@ import (
 	"AlexSarva/gofermart/internal/app"
 	"AlexSarva/gofermart/models"
 	"AlexSarva/gofermart/storage/storagepg"
+	"AlexSarva/gofermart/utils"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -14,6 +15,8 @@ import (
 	"strings"
 	"time"
 )
+
+const timeLayout = "2006-01-02 15:04:05"
 
 // UserRegistration регистрация нового пользователя
 func UserRegistration(database *app.Database) http.HandlerFunc {
@@ -65,8 +68,20 @@ func UserRegistration(database *app.Database) http.HandlerFunc {
 			return
 		}
 
-		http.SetCookie(w, &userCookie)
-		messageResponse(w, "user successfully registered and authenticated", "application/json", http.StatusOK)
+		generatedAt := time.Now().Format(timeLayout)
+		expiresAt := userCookie.Expires.Format(timeLayout)
+		tokenDetails := models.Token{
+			TokenType:   "Bearer",
+			AuthToken:   userCookie.Value,
+			GeneratedAt: generatedAt,
+			ExpiresAt:   expiresAt,
+		}
+		jsonResp, _ := json.Marshal(tokenDetails)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonResp)
+		//http.SetCookie(w, &userCookie)
+		//messageResponse(w, "user successfully registered and authenticated", "application/json", http.StatusOK)
 	}
 }
 
@@ -121,7 +136,26 @@ func UserAuthentication(database *app.Database) http.HandlerFunc {
 			log.Println("cookie expired")
 		}
 
-		w.Header().Add("Set-Cookie", userDB.Cookie)
-		messageResponse(w, "user successfully authenticated", "application/json", http.StatusOK)
+		// Авторизация по токену
+		generatedAt := time.Now().Format(timeLayout)
+		expiresAt := userDB.CookieExp.Format(timeLayout)
+		cookieSession, cookieSessionErr := utils.ParseCookie(userDB.Cookie)
+		if cookieSessionErr != nil {
+			log.Println(cookieSessionErr)
+		}
+
+		tokenDetails := models.Token{
+			TokenType:   "Bearer",
+			AuthToken:   cookieSession,
+			GeneratedAt: generatedAt,
+			ExpiresAt:   expiresAt,
+		}
+		jsonResp, _ := json.Marshal(tokenDetails)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonResp)
+
+		//w.Header().Add("Set-Cookie", userDB.Cookie)
+		//messageResponse(w, "user successfully authenticated", "application/json", http.StatusOK)
 	}
 }

@@ -21,11 +21,18 @@ func PostOrder(database *app.Database) http.HandlerFunc {
 			return
 		}
 
-		userID, cookieErr := GetCookie(r)
-		if cookieErr != nil {
-			messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
+		// Проверка авторизации по токену
+		userID, tokenErr := GetToken(r)
+		if tokenErr != nil {
+			messageResponse(w, "User unauthorized: "+tokenErr.Error(), "application/json", http.StatusUnauthorized)
 			return
 		}
+
+		//userID, cookieErr := GetCookie(r)
+		//if cookieErr != nil {
+		//	messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
+		//	return
+		//}
 
 		b, err := readBodyBytes(r)
 		if err != nil {
@@ -89,16 +96,25 @@ func GetOrders(database *app.Database) http.HandlerFunc {
 			return
 		}
 
-		userID, cookieErr := GetCookie(r)
-		if cookieErr != nil {
-			messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
+		// Проверка авторизации по токену
+		userID, tokenErr := GetToken(r)
+		if tokenErr != nil {
+			messageResponse(w, "User unauthorized: "+tokenErr.Error(), "application/json", http.StatusUnauthorized)
 			return
 		}
+
+		//userID, cookieErr := GetCookie(r)
+		//if cookieErr != nil {
+		//	messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
+		//	return
+		//}
 
 		orders, ordersErr := database.Repo.GetOrders(userID)
 		if ordersErr != nil {
 			if ordersErr == storagepg.ErrNoValues {
-				messageResponse(w, "no data to answer: "+storagepg.ErrNoValues.Error(), "application/json", http.StatusNoContent)
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusNoContent)
+				//messageResponse(w, "no data to answer: "+storagepg.ErrNoValues.Error(), "application/json", http.StatusNoContent)
 				return
 			}
 			messageResponse(w, "Internal Server Error: "+ordersErr.Error(), "application/json", http.StatusInternalServerError)

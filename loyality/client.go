@@ -16,6 +16,7 @@ import (
 )
 
 var ErrInternalServer = errors.New("ErrInternalServer")
+var ErrEmptyOrder = errors.New("empty order")
 
 type ProcessingClient struct {
 	Client *gentleman.Client
@@ -37,7 +38,6 @@ func (pc *ProcessingClient) GetOrder(orderNum string) (models.ProcessingOrder, e
 	res, err := req.Send()
 	var order models.ProcessingOrder
 	if err != nil {
-		log.Printf("Request error: %s\n", err)
 		return order, err
 	}
 
@@ -53,5 +53,16 @@ func (pc *ProcessingClient) GetOrder(orderNum string) (models.ProcessingOrder, e
 			return order, UnmarshErr
 		}
 	}
+
+	emptyOrder := models.ProcessingOrder{
+		OrderNum: "",
+		Status:   "",
+		Accrual:  nil,
+	}
+
+	if order == emptyOrder {
+		return order, ErrEmptyOrder
+	}
+
 	return order, nil
 }
