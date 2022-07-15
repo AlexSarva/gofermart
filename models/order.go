@@ -35,5 +35,5 @@ type Withdraw struct {
 type WithdrawBD struct {
 	OrderNum string    `json:"order" db:"order_num"`
 	Withdraw float32   `json:"sum" db:"withdraw"`
-	Created  time.Time `json:"uploaded_at" db:"created"`
+	Created  time.Time `json:"processed_at" db:"created"`
 }

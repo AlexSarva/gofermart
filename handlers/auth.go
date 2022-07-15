@@ -67,9 +67,6 @@ func UserRegistration(database *app.Database) http.HandlerFunc {
 
 		http.SetCookie(w, &userCookie)
 		messageResponse(w, "user successfully registered and authenticated", "application/json", http.StatusOK)
-
-		log.Printf("user registered \n %+v\n", user)
-
 	}
 }
 

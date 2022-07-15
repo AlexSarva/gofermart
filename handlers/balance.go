@@ -116,3 +116,37 @@ func Withdraw(database *app.Database) http.HandlerFunc {
 		messageResponse(w, "successful request processing", "application/json", http.StatusOK)
 	}
 }
+
+func GetAllWithdraws(database *app.Database) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		headerContentType := r.Header.Get("Content-Length")
+		if len(headerContentType) != 0 {
+			messageResponse(w, "Content-Length is not equal 0", "application/json", http.StatusBadRequest)
+			return
+		}
+
+		userID, cookieErr := GetCookie(r)
+		if cookieErr != nil {
+			messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
+			return
+		}
+
+		withdraws, withdrawsErr := database.Repo.GetAllWithdraw(userID)
+		if withdrawsErr != nil {
+			if withdrawsErr == storagepg.ErrNoValues {
+				messageResponse(w, "no data to answer: "+storagepg.ErrNoValues.Error(), "application/json", http.StatusNoContent)
+				return
+			}
+			messageResponse(w, "Internal Server Error: "+withdrawsErr.Error(), "application/json", http.StatusInternalServerError)
+			return
+		}
+
+		withdrawsList, withdrawsListErr := json.Marshal(withdraws)
+		if withdrawsListErr != nil {
+			panic(withdrawsListErr)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(withdrawsList)
+	}
+}

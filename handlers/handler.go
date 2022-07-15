@@ -68,7 +68,6 @@ func MyHandler(database *app.Database) *chi.Mux {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	//r.Use(CookieHandler)
 	r.Use(middleware.AllowContentEncoding("gzip"))
 	r.Use(middleware.AllowContentType("application/json", "text/plain", "application/x-gzip"))
 	r.Use(middleware.Compress(5, gzipContentTypes))
@@ -78,10 +77,7 @@ func MyHandler(database *app.Database) *chi.Mux {
 	r.Get("/api/user/orders", GetOrders(database))
 	r.Get("/api/user/balance", GetBalance(database))
 	r.Post("/api/user/balance/withdraw", Withdraw(database))
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("welcome"))
-	})
-	r.Get("/ping", PingDB(database))
+	r.Get("/api/user/withdrawals", GetAllWithdraws(database))
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
@@ -92,7 +88,7 @@ func MyHandler(database *app.Database) *chi.Mux {
 	})
 	r.MethodNotAllowed(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
-		_, naErr := w.Write([]byte("sorry, only GET, POST and DELETE methods are supported."))
+		_, naErr := w.Write([]byte("sorry, only GET and POST methods are supported."))
 		if naErr != nil {
 			log.Println(naErr)
 		}

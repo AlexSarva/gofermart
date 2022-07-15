@@ -129,3 +129,15 @@ func (d *PostgresDB) NewWithdraw(withdraw *models.Withdraw) error {
 	}
 	return nil
 }
+
+func (d *PostgresDB) GetAllWithdraw(userID uuid.UUID) ([]*models.WithdrawBD, error) {
+	var withdraws []*models.WithdrawBD
+	err := d.database.Select(&withdraws, "SELECT order_num, withdraw, created FROM public.withdraw where user_id=$1 order by created", userID)
+	if len(withdraws) == 0 {
+		return withdraws, ErrNoValues
+	}
+	if err != nil {
+		return withdraws, err
+	}
+	return withdraws, nil
+}
