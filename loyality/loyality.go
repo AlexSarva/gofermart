@@ -3,22 +3,20 @@ package loyality
 import (
 	"AlexSarva/gofermart/internal/app"
 	"AlexSarva/gofermart/models"
-	"AlexSarva/gofermart/storage/storagepg"
-	"log"
+	"time"
 )
 
 func GetOrdersToProcessing(database app.Database, ordersCh chan string) {
 	for {
-		loyal, loyalErr := database.Repo.GetOrdersForProcessing()
-		if loyalErr != nil {
-			if loyalErr == storagepg.ErrNoValues {
-				log.Println(loyalErr)
+		loyal, _ := database.Repo.GetOrdersForProcessing()
+		if len(loyal) > 0 {
+			for _, order := range loyal {
+				ordersCh <- order
 			}
-			log.Println(loyalErr)
+		} else {
+			time.Sleep(time.Second * 10)
 		}
-		for _, order := range loyal {
-			ordersCh <- order
-		}
+
 	}
 
 }
