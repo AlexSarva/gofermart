@@ -78,6 +78,7 @@ func UserRegistration(database *app.Database) http.HandlerFunc {
 		}
 		jsonResp, _ := json.Marshal(tokenDetails)
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("WWW-Authenticate", tokenDetails.TokenType+" "+tokenDetails.AuthToken)
 		w.WriteHeader(http.StatusOK)
 		w.Write(jsonResp)
 		//http.SetCookie(w, &userCookie)
@@ -152,6 +153,7 @@ func UserAuthentication(database *app.Database) http.HandlerFunc {
 		}
 		jsonResp, _ := json.Marshal(tokenDetails)
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("WWW-Authenticate", tokenDetails.TokenType+" "+tokenDetails.AuthToken)
 		w.WriteHeader(http.StatusOK)
 		w.Write(jsonResp)
 
