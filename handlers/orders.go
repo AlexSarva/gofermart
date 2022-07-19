@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -28,8 +27,6 @@ func PostOrder(database *app.Database, orderChan chan models.Order) http.Handler
 			messageResponse(w, "User unauthorized: "+tokenErr.Error(), "application/json", http.StatusUnauthorized)
 			return
 		}
-		log.Printf("%s, post check 1", userID.String())
-
 		//userID, cookieErr := GetCookie(r)
 		//if cookieErr != nil {
 		//	messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
@@ -60,13 +57,11 @@ func PostOrder(database *app.Database, orderChan chan models.Order) http.Handler
 		}
 
 		orderNumStr := fmt.Sprintf("%d", orderNum)
-		log.Printf("%s, post check 2", userID.String())
 		orderDB, orderDBErr := database.Repo.CheckOrder(orderNumStr)
 		if orderDBErr != nil {
 			messageResponse(w, "Internal Server Error: "+orderDBErr.Error(), "application/json", http.StatusInternalServerError)
 			return
 		}
-		log.Printf("%s, post check 3", userID.String())
 
 		if orderDB.OrderNum == orderNumStr && orderDB.UserID != userID {
 			messageResponse(w, "the order number has already been uploaded by another user", "application/json", http.StatusConflict)
@@ -82,7 +77,6 @@ func PostOrder(database *app.Database, orderChan chan models.Order) http.Handler
 		order.UserID, order.OrderNum = userID, orderNumStr
 
 		//insertErr := database.Repo.NewOrder(&order)
-		log.Printf("%s, post check 4", userID.String())
 		orderChan <- order
 		//
 		//if insertErr != nil {
@@ -114,14 +108,11 @@ func GetOrders(database *app.Database) http.HandlerFunc {
 		//	messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
 		//	return
 		//}
-		log.Printf("%s, get check 1", userID.String())
 		orders, ordersErr := database.Repo.GetOrders(userID)
-		log.Printf("%s, get check 2", userID.String())
 		if ordersErr != nil {
 			if ordersErr == storagepg.ErrNoValues {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusNoContent)
-				log.Printf("%s, get check 3", userID.String())
 				//messageResponse(w, "no data to answer: "+storagepg.ErrNoValues.Error(), "application/json", http.StatusNoContent)
 				return
 			}
@@ -129,7 +120,6 @@ func GetOrders(database *app.Database) http.HandlerFunc {
 			return
 		}
 
-		log.Printf("%s, get check 4", userID.String())
 		ordersList, ordersListErr := json.Marshal(orders)
 		if ordersListErr != nil {
 			panic(ordersListErr)
