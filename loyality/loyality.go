@@ -27,11 +27,17 @@ func GetProcessedInfo(client *ProcessingClient, ordersCh chan string, procesedCh
 			log.Printf("Получаем %s", orderInfo)
 			procesedCh <- orderInfo
 		}
+
+		procesedCh <- models.ProcessingOrder{
+			OrderNum: order,
+			Status:   "PROCESSED",
+		}
 	}
 }
 
 func ApplyLoyality(database app.Database, procesedCh chan models.ProcessingOrder) {
 	for order := range procesedCh {
+		log.Printf("%+v\n", order)
 		database.Repo.UpdateOrder(order)
 	}
 }

@@ -158,9 +158,13 @@ func (d *PostgresDB) GetOrdersForProcessing() ([]string, error) {
 
 func (d *PostgresDB) UpdateOrder(order models.ProcessingOrder) {
 	tx := d.database.MustBegin()
-	log.Printf("%+v\n", order)
-	query := fmt.Sprintf("update public.orders set status = '%s', accrual = %d where order_num = '%s';", order.Status, order.Accrual, order.OrderNum)
-	log.Println(query)
+	var query string
+	if order.Accrual != nil {
+		query = fmt.Sprintf("update public.orders set status = '%s', accrual = %f where order_num = '%s';", order.Status, order.Accrual.(float64), order.OrderNum)
+	} else {
+		query = fmt.Sprintf("update public.orders set status = '%s' where order_num = '%s';", order.Status, order.OrderNum)
+	}
+
 	ret, err := tx.Exec(query)
 	if err != nil {
 		log.Printf("update failed, err:%v\n", err)
