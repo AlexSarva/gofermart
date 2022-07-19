@@ -35,7 +35,6 @@ func NewProcessingClient(serviceAddress string) *ProcessingClient {
 func (pc *ProcessingClient) GetOrder(orderNum string) (models.ProcessingOrder, error) {
 	req := pc.Client.Request()
 	req.Path(fmt.Sprintf("/%s", orderNum))
-	log.Println(req.Context.Request.URL)
 	res, err := req.Send()
 	var order models.ProcessingOrder
 	if err != nil {

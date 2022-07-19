@@ -16,9 +16,7 @@ func GetOrdersToProcessing(database app.Database, ordersCh chan string) {
 		} else {
 			time.Sleep(time.Second * 10)
 		}
-
 	}
-
 }
 
 func GetProcessedInfo(client *ProcessingClient, ordersCh chan string, procesedCh chan models.ProcessingOrder) {

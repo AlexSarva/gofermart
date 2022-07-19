@@ -5,6 +5,7 @@ import (
 	"AlexSarva/gofermart/loyality"
 	"AlexSarva/gofermart/models"
 	"AlexSarva/gofermart/server"
+	"AlexSarva/gofermart/utils"
 	"flag"
 	"github.com/caarlos0/env/v6"
 	"log"
@@ -29,15 +30,19 @@ func main() {
 	client := loyality.NewProcessingClient(cfg.AccrualSystem)
 	ordersToProcessingCh := make(chan string)
 	ordersProcessedCh := make(chan models.ProcessingOrder)
+	insertOrdersCh := make(chan models.Order)
 	go loyality.GetOrdersToProcessing(*DB, ordersToProcessingCh)
 	go loyality.GetProcessedInfo(client, ordersToProcessingCh, ordersProcessedCh)
 	go loyality.ApplyLoyality(*DB, ordersProcessedCh)
+	go utils.InsertOrderToDB(*DB, insertOrdersCh)
 	if dbErr != nil {
 		log.Fatal(dbErr)
 	}
 	ping := DB.Repo.Ping()
 	log.Println(ping)
-	MainApp := server.NewServer(&cfg, DB)
+	MainApp := server.NewServer(&cfg, DB, &models.MyChans{
+		InsertOrdersCh: insertOrdersCh,
+	})
 	if err := MainApp.Run(); err != nil {
 		log.Fatalf("%s", err.Error())
 	}

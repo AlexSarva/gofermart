@@ -49,3 +49,7 @@ type TestType struct {
 	Diameter   string `json:"diameter"`
 	Population string `json:"population"`
 }
+
+type MyChans struct {
+	InsertOrdersCh chan Order
+}

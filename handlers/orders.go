@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-func PostOrder(database *app.Database) http.HandlerFunc {
+func PostOrder(database *app.Database, orderChan chan models.Order) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		headerContentType := r.Header.Get("Content-Type")
 		if !strings.Contains("text/plain", headerContentType) {
@@ -78,11 +78,14 @@ func PostOrder(database *app.Database) http.HandlerFunc {
 		var order models.Order
 		order.UserID, order.OrderNum = userID, orderNumStr
 
-		insertErr := database.Repo.NewOrder(&order)
-		if insertErr != nil {
-			messageResponse(w, "Internal Server Error: "+insertErr.Error(), "application/json", http.StatusInternalServerError)
-			return
-		}
+		//insertErr := database.Repo.NewOrder(&order)
+
+		orderChan <- order
+		//
+		//if insertErr != nil {
+		//	messageResponse(w, "Internal Server Error: "+insertErr.Error(), "application/json", http.StatusInternalServerError)
+		//	return
+		//}
 
 		messageResponse(w, "new order number accepted for processing", "application/json", http.StatusAccepted)
 	}
