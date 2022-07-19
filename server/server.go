@@ -20,9 +20,10 @@ func NewServer(cfg *models.Config, database *app.Database, chans *models.MyChans
 
 	handler := handlers.MyHandler(database, chans)
 	server := http.Server{
-		Addr:        cfg.ServerAddress,
-		Handler:     handler,
-		ReadTimeout: time.Second * 10,
+		Addr:         cfg.ServerAddress,
+		Handler:      handler,
+		ReadTimeout:  time.Second * 60,
+		WriteTimeout: time.Second * 60,
 	}
 	return &Server{
 		httpServer: &server,
@@ -35,7 +36,7 @@ func (a *Server) Run() error {
 	go func() {
 		err := a.httpServer.ListenAndServe()
 		if err != nil {
-			log.Fatalf("Something wrong with server: %+v", err)
+			log.Printf("Something wrong with server: %+v", err)
 		}
 	}()
 
