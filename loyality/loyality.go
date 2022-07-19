@@ -17,6 +17,7 @@ func GetOrdersToProcessing(database app.Database, ordersCh chan string) {
 		} else {
 			time.Sleep(time.Second * 10)
 		}
+		time.Sleep(time.Second * 2)
 	}
 }
 

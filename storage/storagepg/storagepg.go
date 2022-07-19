@@ -107,7 +107,7 @@ func (d *PostgresDB) GetOrders(userID uuid.UUID) ([]*models.OrderDB, error) {
 
 func (d *PostgresDB) GetBalance(userID uuid.UUID) (*models.Balance, error) {
 	var balance models.Balance
-	err := d.database.Get(&balance, "SELECT withdraw, current FROM public.balance WHERE user_id=$1", userID)
+	err := d.database.Get(&balance, "SELECT withdraw, total FROM public.balance WHERE user_id=$1", userID)
 	if err != nil {
 		return &balance, err
 	}
