@@ -76,13 +76,15 @@ func PostOrder(database *app.Database, orderChan chan models.Order) http.Handler
 		var order models.Order
 		order.UserID, order.OrderNum = userID, orderNumStr
 
-		//insertErr := database.Repo.NewOrder(&order)
-		orderChan <- order
+		insertErr := database.Repo.NewOrder(&order)
+
+		// TODO Убрать каналы
+		//orderChan <- order
 		//
-		//if insertErr != nil {
-		//	messageResponse(w, "Internal Server Error: "+insertErr.Error(), "application/json", http.StatusInternalServerError)
-		//	return
-		//}
+		if insertErr != nil {
+			messageResponse(w, "Internal Server Error: "+insertErr.Error(), "application/json", http.StatusInternalServerError)
+			return
+		}
 
 		messageResponse(w, "new order number accepted for processing", "application/json", http.StatusAccepted)
 	}
