@@ -3,6 +3,7 @@ package loyality
 import (
 	"AlexSarva/gofermart/internal/app"
 	"AlexSarva/gofermart/models"
+	"log"
 	"time"
 )
 
@@ -21,7 +22,9 @@ func GetOrdersToProcessing(database app.Database, ordersCh chan string) {
 
 func GetProcessedInfo(client *ProcessingClient, ordersCh chan string, procesedCh chan models.ProcessingOrder) {
 	for order := range ordersCh {
+		log.Printf("Отправляем %s", order)
 		if orderInfo, orderInfoErr := client.GetOrder(order); orderInfoErr == nil {
+			log.Printf("Получаем %s", orderInfo)
 			procesedCh <- orderInfo
 		}
 	}

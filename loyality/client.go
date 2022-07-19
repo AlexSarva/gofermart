@@ -41,6 +41,7 @@ func (pc *ProcessingClient) GetOrder(orderNum string) (models.ProcessingOrder, e
 		return order, err
 	}
 
+	log.Printf("StatusCode: %d", res.StatusCode)
 	switch res.StatusCode {
 	case http.StatusInternalServerError:
 		log.Printf("Internas server error: %d\n", res.StatusCode)
