@@ -22,12 +22,12 @@ type ProcessingClient struct {
 	Client *gentleman.Client
 }
 
-func NewProcessingClient(serviceAddress, basic_url string) *ProcessingClient {
-	log.Println("LoyalityServer: ", serviceAddress+basic_url)
+func NewProcessingClient(serviceAddress, basicURL string) *ProcessingClient {
+	log.Println("LoyalityServer: ", serviceAddress+basicURL)
 	cli := gentleman.New()
 	cli.Use(timeout.Request(60 * time.Second))
 	cli.Use(retry.New(retrier.New(retrier.ExponentialBackoff(5, 100*time.Millisecond), nil)))
-	cli.Use(url.BaseURL(serviceAddress + basic_url))
+	cli.Use(url.BaseURL(serviceAddress + basicURL))
 	return &ProcessingClient{
 		Client: cli,
 	}
