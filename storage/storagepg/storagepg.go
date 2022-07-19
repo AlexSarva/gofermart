@@ -31,6 +31,7 @@ func NewPostgresDBConnection(config string) *PostgresDB {
 }
 
 func (d *PostgresDB) Ping() bool {
+	//d.database.
 	return d.database.Ping() == nil
 }
 

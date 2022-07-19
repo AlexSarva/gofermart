@@ -10,7 +10,7 @@ const ddl = `
 		created timestamptz default now()
 	);
 	CREATE TABLE if not exists public.orders (
-		user_id uuid references public.users(id),
+		user_id uuid,
 		order_num text primary key,
 		accrual float4,
 		status text,
@@ -20,7 +20,7 @@ const ddl = `
 	delete from public.users where username like 'test%';
 
 create table if not exists public.withdraw (
-    user_id uuid references public.users(id),
+    user_id uuid,
     order_num text primary key,
     withdraw float4,
     created timestamptz default now()
