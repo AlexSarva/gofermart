@@ -43,9 +43,3 @@ type ProcessingOrder struct {
 	Status   string      `json:"status"`
 	Accrual  interface{} `json:"accrual,omitempty"`
 }
-
-type TestType struct {
-	Name       string `json:"name"`
-	Diameter   string `json:"diameter"`
-	Population string `json:"population"`
-}
