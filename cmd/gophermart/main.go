@@ -27,7 +27,7 @@ func main() {
 	log.Printf("%+v\n", cfg)
 	log.Printf("ServerAddress: %v", cfg.ServerAddress)
 	DB, dbErr := app.NewStorage(cfg.Database)
-	client := loyality.NewProcessingClient(cfg.AccrualSystem)
+	client := loyality.NewProcessingClient(cfg.AccrualSystem, "/api/orders")
 	ordersToProcessingCh := make(chan string)
 	ordersProcessedCh := make(chan models.ProcessingOrder)
 	insertOrdersCh := make(chan models.Order)
