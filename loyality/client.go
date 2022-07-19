@@ -61,12 +61,10 @@ func (pc *ProcessingClient) GetOrder(orderNum string) (models.ProcessingOrder, e
 	}
 
 	if order == emptyOrder {
-		log.Println("empty order")
 		return order, ErrEmptyOrder
 	}
 
 	if order.OrderNum == "" {
-		log.Println("empty order check 2")
 		return order, ErrEmptyOrder
 	}
 

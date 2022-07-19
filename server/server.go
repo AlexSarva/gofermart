@@ -45,7 +45,7 @@ func (a *Server) Run() error {
 
 	<-quit
 
-	ctx, shutdown := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, shutdown := context.WithTimeout(context.Background(), 30*time.Second)
 	defer shutdown()
 
 	return a.httpServer.Shutdown(ctx)

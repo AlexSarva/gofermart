@@ -43,7 +43,7 @@ func main() {
 	MainApp := server.NewServer(&cfg, DB, &models.MyChans{
 		InsertOrdersCh: insertOrdersCh,
 	})
-	if err := MainApp.Run(); err != nil {
-		log.Fatalf("%s", err.Error())
+	if runErr := MainApp.Run(); runErr != nil {
+		log.Printf("%s", runErr.Error())
 	}
 }
