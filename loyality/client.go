@@ -1,6 +1,7 @@
 package loyality
 
 import (
+	"AlexSarva/gofermart/logger"
 	"AlexSarva/gofermart/models"
 	"encoding/json"
 	"errors"
@@ -11,6 +12,7 @@ import (
 	"gopkg.in/h2non/gentleman.v2/plugins/timeout"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -24,7 +26,7 @@ type ProcessingClient struct {
 func NewProcessingClient(serviceAddress, basicURL string) *ProcessingClient {
 	log.Println("LoyalityServer: ", serviceAddress+basicURL)
 	cli := gentleman.New()
-	//cli.Use(logger.New(os.Stdout))
+	cli.Use(logger.New(os.Stdout))
 	cli.Use(timeout.Request(60 * time.Second))
 	cli.Use(retry.New(retrier.New(retrier.ExponentialBackoff(5, 100*time.Millisecond), nil)))
 	cli.URL(serviceAddress + basicURL)
@@ -43,7 +45,6 @@ func (pc *ProcessingClient) GetOrder(orderNum string) (models.ProcessingOrder, e
 		return order, err
 	}
 
-	log.Printf("StatusCode: %d", res.StatusCode)
 	switch res.StatusCode {
 	case http.StatusInternalServerError:
 		log.Printf("Internas server error: %d\n", res.StatusCode)

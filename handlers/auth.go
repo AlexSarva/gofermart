@@ -81,8 +81,6 @@ func UserRegistration(database *app.Database) http.HandlerFunc {
 		w.Header().Set("Authorization", tokenDetails.TokenType+" "+tokenDetails.AuthToken)
 		w.WriteHeader(http.StatusOK)
 		w.Write(jsonResp)
-		//http.SetCookie(w, &userCookie)
-		//messageResponse(w, "user successfully registered and authenticated", "application/json", http.StatusOK)
 	}
 }
 
@@ -156,8 +154,5 @@ func UserAuthentication(database *app.Database) http.HandlerFunc {
 		w.Header().Set("Authorization", tokenDetails.TokenType+" "+tokenDetails.AuthToken)
 		w.WriteHeader(http.StatusOK)
 		w.Write(jsonResp)
-
-		//w.Header().Add("Set-Cookie", userDB.Cookie)
-		//messageResponse(w, "user successfully authenticated", "application/json", http.StatusOK)
 	}
 }

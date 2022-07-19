@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"AlexSarva/gofermart/internal/app"
-	"AlexSarva/gofermart/models"
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
@@ -49,21 +48,9 @@ func readBodyBytes(r *http.Request) (io.ReadCloser, error) {
 	}
 }
 
-func PingDB(database *app.Database) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ping := database.Repo.Ping()
-		if ping {
-			w.WriteHeader(http.StatusOK)
-		} else {
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-
-	}
-}
-
 var gzipContentTypes = "application/x-gzip, application/javascript, application/json, text/css, text/html, text/plain, text/xml"
 
-func MyHandler(database *app.Database, chans *models.MyChans) *chi.Mux {
+func MyHandler(database *app.Database) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
@@ -74,7 +61,7 @@ func MyHandler(database *app.Database, chans *models.MyChans) *chi.Mux {
 	r.Use(middleware.Compress(5, gzipContentTypes))
 	r.Post("/api/user/register", UserRegistration(database))
 	r.Post("/api/user/login", UserAuthentication(database))
-	r.Post("/api/user/orders", PostOrder(database, chans.InsertOrdersCh))
+	r.Post("/api/user/orders", PostOrder(database))
 	r.Get("/api/user/orders", GetOrders(database))
 	r.Get("/api/user/balance", GetBalance(database))
 	r.Post("/api/user/balance/withdraw", Withdraw(database))

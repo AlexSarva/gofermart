@@ -8,13 +8,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
 )
 
-func PostOrder(database *app.Database, orderChan chan models.Order) http.HandlerFunc {
+func PostOrder(database *app.Database) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		headerContentType := r.Header.Get("Content-Type")
 		if !strings.Contains("text/plain", headerContentType) {
@@ -28,11 +27,6 @@ func PostOrder(database *app.Database, orderChan chan models.Order) http.Handler
 			messageResponse(w, "User unauthorized: "+tokenErr.Error(), "application/json", http.StatusUnauthorized)
 			return
 		}
-		//userID, cookieErr := GetCookie(r)
-		//if cookieErr != nil {
-		//	messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
-		//	return
-		//}
 
 		b, err := readBodyBytes(r)
 		if err != nil {
@@ -77,12 +71,8 @@ func PostOrder(database *app.Database, orderChan chan models.Order) http.Handler
 		var order models.Order
 		order.UserID, order.OrderNum = userID, orderNumStr
 
-		log.Printf("POST ORDER -> %s: %+v\n", order.UserID.String(), order)
 		insertErr := database.Repo.NewOrder(&order)
 
-		// TODO Убрать каналы
-		//orderChan <- order
-		//
 		if insertErr != nil {
 			messageResponse(w, "Internal Server Error: "+insertErr.Error(), "application/json", http.StatusInternalServerError)
 			return
@@ -107,17 +97,11 @@ func GetOrders(database *app.Database) http.HandlerFunc {
 			return
 		}
 
-		//userID, cookieErr := GetCookie(r)
-		//if cookieErr != nil {
-		//	messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
-		//	return
-		//}
 		orders, ordersErr := database.Repo.GetOrders(userID)
 		if ordersErr != nil {
 			if ordersErr == storagepg.ErrNoValues {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusNoContent)
-				//messageResponse(w, "no data to answer: "+storagepg.ErrNoValues.Error(), "application/json", http.StatusNoContent)
 				return
 			}
 			messageResponse(w, "Internal Server Error: "+ordersErr.Error(), "application/json", http.StatusInternalServerError)

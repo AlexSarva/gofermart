@@ -160,8 +160,7 @@ func TestPostOrder(t *testing.T) {
 			},
 		},
 	}
-	myChans := models.MyChans{InsertOrdersCh: make(chan models.Order)}
-	Handler := *MyHandler(database, &myChans)
+	Handler := *MyHandler(database)
 	ts := httptest.NewServer(&Handler)
 	defer ts.Close()
 
@@ -222,21 +221,6 @@ func TestGetOrders(t *testing.T) {
 	}
 	subUserToken := fmt.Sprintf("Bearer %s", subCookie.Value)
 	database.Repo.NewUser(&subUser)
-
-	//badCookie := http.Cookie{
-	//	Name:       "session",
-	//	Value:      "3362fd24cb78497d8af5429d69a268a3ce6179ea95f9e206f6cb2bd0c538d72c97341ecab445310cdf0ff57f09b9f2b",
-	//	Path:       "/",
-	//	Domain:     "",
-	//	Expires:    time.Now().Add(time.Hour * 1),
-	//	RawExpires: "",
-	//	MaxAge:     0,
-	//	Secure:     false,
-	//	HttpOnly:   false,
-	//	SameSite:   0,
-	//	Raw:        "",
-	//	Unparsed:   nil,
-	//}
 
 	if dbErr != nil {
 		log.Fatal(dbErr)
@@ -317,8 +301,7 @@ func TestGetOrders(t *testing.T) {
 			},
 		},
 	}
-	myChans := models.MyChans{InsertOrdersCh: make(chan models.Order)}
-	Handler := *MyHandler(database, &myChans)
+	Handler := *MyHandler(database)
 	ts := httptest.NewServer(&Handler)
 	defer ts.Close()
 

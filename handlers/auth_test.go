@@ -91,8 +91,7 @@ func TestUserRegistration(t *testing.T) {
 			},
 		},
 	}
-	myChans := models.MyChans{InsertOrdersCh: make(chan models.Order)}
-	Handler := *MyHandler(database, &myChans)
+	Handler := *MyHandler(database)
 	ts := httptest.NewServer(&Handler)
 	defer ts.Close()
 
@@ -219,8 +218,7 @@ func TestUserAuthentication(t *testing.T) {
 			},
 		},
 	}
-	myChans := models.MyChans{InsertOrdersCh: make(chan models.Order)}
-	Handler := *MyHandler(database, &myChans)
+	Handler := *MyHandler(database)
 	ts := httptest.NewServer(&Handler)
 	defer ts.Close()
 

@@ -164,8 +164,6 @@ func (d *PostgresDB) UpdateOrder(order models.ProcessingOrder) {
 	} else {
 		query = fmt.Sprintf("update public.orders set status = '%s' where order_num = '%s';", order.Status, order.OrderNum)
 	}
-	log.Println(query)
-
 	ret, err := tx.Exec(query)
 	if err != nil {
 		log.Printf("update failed, err:%v\n", err)

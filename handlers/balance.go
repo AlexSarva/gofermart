@@ -7,7 +7,6 @@ import (
 	"AlexSarva/gofermart/utils/luhn"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -28,19 +27,12 @@ func GetBalance(database *app.Database) http.HandlerFunc {
 			return
 		}
 
-		//userID, cookieErr := GetCookie(r)
-		//if cookieErr != nil {
-		//	messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
-		//	return
-		//}
-
 		balance, balanceErr := database.Repo.GetBalance(userID)
 		if balanceErr != nil {
 			messageResponse(w, "Internal Server Error: "+balanceErr.Error(), "application/json", http.StatusInternalServerError)
 			return
 		}
 
-		log.Printf("GET BALANCE -> %s: %+v\n", userID.String(), balance)
 		// TODO обработать паники
 		balanceJSON, balanceJSONErr := json.Marshal(balance)
 		if balanceJSONErr != nil {
@@ -67,12 +59,6 @@ func Withdraw(database *app.Database) http.HandlerFunc {
 			messageResponse(w, "User unauthorized: "+tokenErr.Error(), "application/json", http.StatusUnauthorized)
 			return
 		}
-
-		//userID, cookieErr := GetCookie(r)
-		//if cookieErr != nil {
-		//	messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
-		//	return
-		//}
 
 		var withdraw models.Withdraw
 		var unmarshalErr *json.UnmarshalTypeError
@@ -119,7 +105,6 @@ func Withdraw(database *app.Database) http.HandlerFunc {
 		}
 
 		withdraw.UserID = userID
-		log.Printf("WITHDRAW -> %s: %+v\n", withdraw.UserID.String(), withdraw)
 		withdrawErr := database.Repo.NewWithdraw(&withdraw)
 		if withdrawErr != nil {
 			if withdrawErr == storagepg.ErrDuplicatePK {
@@ -148,12 +133,6 @@ func GetAllWithdraws(database *app.Database) http.HandlerFunc {
 			messageResponse(w, "User unauthorized: "+tokenErr.Error(), "application/json", http.StatusUnauthorized)
 			return
 		}
-
-		//userID, cookieErr := GetCookie(r)
-		//if cookieErr != nil {
-		//	messageResponse(w, "User unauthorized: "+cookieErr.Error(), "application/json", http.StatusUnauthorized)
-		//	return
-		//}
 
 		withdraws, withdrawsErr := database.Repo.GetAllWithdraw(userID)
 		if withdrawsErr != nil {

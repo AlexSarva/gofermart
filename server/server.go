@@ -16,9 +16,9 @@ type Server struct {
 	httpServer *http.Server
 }
 
-func NewServer(cfg *models.Config, database *app.Database, chans *models.MyChans) *Server {
+func NewServer(cfg *models.Config, database *app.Database) *Server {
 
-	handler := handlers.MyHandler(database, chans)
+	handler := handlers.MyHandler(database)
 	server := http.Server{
 		Addr:         cfg.ServerAddress,
 		Handler:      handler,
