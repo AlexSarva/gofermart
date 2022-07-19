@@ -21,7 +21,7 @@ type OrderDB struct {
 }
 
 type Balance struct {
-	Current  float32 `json:"current" db:"total"`
+	Current  float32 `json:"current" db:"current"`
 	Withdraw float32 `json:"withdraw" db:"withdraw"`
 }
 

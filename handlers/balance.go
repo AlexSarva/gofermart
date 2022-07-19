@@ -113,7 +113,7 @@ func Withdraw(database *app.Database) http.HandlerFunc {
 			return
 		}
 
-		if (balance.Current - balance.Withdraw) < withdraw.Withdraw {
+		if balance.Current < withdraw.Withdraw {
 			messageResponse(w, "there are not enough funds on the account", "application/json", http.StatusPaymentRequired)
 			return
 		}
