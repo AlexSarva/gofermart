@@ -151,7 +151,7 @@ func (d *PostgresDB) GetOrdersForProcessing() ([]string, error) {
 		return orders, ErrNoValues
 	}
 	if err != nil {
-		return orders, w
+		return orders, err
 	}
 	return orders, nil
 }
