@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -76,6 +77,7 @@ func PostOrder(database *app.Database, orderChan chan models.Order) http.Handler
 		var order models.Order
 		order.UserID, order.OrderNum = userID, orderNumStr
 
+		log.Printf("POST ORDER -> %s: %+v\n", order.UserID.String(), order)
 		insertErr := database.Repo.NewOrder(&order)
 
 		// TODO Убрать каналы

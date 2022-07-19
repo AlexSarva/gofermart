@@ -7,6 +7,7 @@ import (
 	"AlexSarva/gofermart/utils/luhn"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -39,6 +40,7 @@ func GetBalance(database *app.Database) http.HandlerFunc {
 			return
 		}
 
+		log.Printf("GET BALANCE -> %s: %+v\n", userID.String(), balance)
 		// TODO обработать паники
 		balanceJSON, balanceJSONErr := json.Marshal(balance)
 		if balanceJSONErr != nil {
@@ -117,6 +119,7 @@ func Withdraw(database *app.Database) http.HandlerFunc {
 		}
 
 		withdraw.UserID = userID
+		log.Printf("WITHDRAW -> %s: %+v\n", withdraw.UserID.String(), withdraw)
 		withdrawErr := database.Repo.NewWithdraw(&withdraw)
 		if withdrawErr != nil {
 			if withdrawErr == storagepg.ErrDuplicatePK {
