@@ -6,14 +6,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gopkg.in/eapache/go-resiliency.v1/retrier"
-	"gopkg.in/h2non/gentleman-retry.v2"
-	"gopkg.in/h2non/gentleman.v2"
-	"gopkg.in/h2non/gentleman.v2/plugins/timeout"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"gopkg.in/eapache/go-resiliency.v1/retrier"
+	"gopkg.in/h2non/gentleman-retry.v2"
+	"gopkg.in/h2non/gentleman.v2"
+	"gopkg.in/h2non/gentleman.v2/plugins/timeout"
 )
 
 var ErrInternalServer = errors.New("ErrInternalServer")

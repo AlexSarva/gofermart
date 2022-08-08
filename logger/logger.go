@@ -1,11 +1,12 @@
 package logger
 
 import (
+	"io"
+	"net/http"
+
 	"github.com/izumin5210/httplogger"
 	"gopkg.in/h2non/gentleman.v2/context"
 	"gopkg.in/h2non/gentleman.v2/plugin"
-	"io"
-	"net/http"
 )
 
 // New creates logger plugin instance

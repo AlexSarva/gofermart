@@ -8,12 +8,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const timeLayout = "2006-01-02 15:04:05"
@@ -117,7 +118,7 @@ func UserAuthentication(database *app.Database) http.HandlerFunc {
 
 		userDB, userDBErr := database.Repo.GetUser(user.Username)
 		if userDBErr != nil {
-			if userDBErr == sql.ErrNoRows {
+			if errors.Is(userDBErr, sql.ErrNoRows) {
 				messageResponse(w, "User unauthorized: "+user.Username+", please register at /api/user/register", "application/json", http.StatusUnauthorized)
 				return
 			}

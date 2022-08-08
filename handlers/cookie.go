@@ -3,10 +3,11 @@ package handlers
 import (
 	"AlexSarva/gofermart/crypto"
 	"errors"
-	"github.com/google/uuid"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 var ErrNotValidCookie = errors.New("valid cookie does not found")

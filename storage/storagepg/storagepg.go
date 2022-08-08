@@ -5,10 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
+
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"log"
 )
 
 var ErrDuplicatePK = errors.New("duplicate PK")
@@ -66,7 +67,7 @@ func (d *PostgresDB) CheckOrder(orderNum string) (*models.Order, error) {
 	var order models.Order
 	err := d.database.Get(&order, "SELECT user_id, order_num FROM public.orders WHERE order_num=$1", orderNum)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return &order, nil
 		}
 		return &order, err

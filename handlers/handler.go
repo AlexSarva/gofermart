@@ -5,12 +5,13 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 // Дополнительный обработчик ответа
@@ -19,7 +20,10 @@ func messageResponse(w http.ResponseWriter, message, ContentType string, httpSta
 	w.WriteHeader(httpStatusCode)
 	resp := make(map[string]string)
 	resp["message"] = message
-	jsonResp, _ := json.Marshal(resp)
+	jsonResp, jsonRespErr := json.Marshal(resp)
+	if jsonRespErr != nil {
+		log.Println(jsonRespErr)
+	}
 	w.Write(jsonResp)
 }
 

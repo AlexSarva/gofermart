@@ -5,13 +5,14 @@ import (
 	"AlexSarva/gofermart/models"
 	"bytes"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func TestPostOrder(t *testing.T) {
@@ -32,7 +33,10 @@ func TestPostOrder(t *testing.T) {
 	}
 	userToken := fmt.Sprintf("Bearer %s", cookie.Value)
 
-	database.Repo.NewUser(&user)
+	newUserErr := database.Repo.NewUser(&user)
+	if newUserErr != nil {
+		log.Println("New User Error", newUserErr)
+	}
 
 	subUserID := uuid.New()
 	subCookie, subCookieExp := GenerateCookie(subUserID)
@@ -204,7 +208,10 @@ func TestGetOrders(t *testing.T) {
 		CookieExp: cookieExp,
 	}
 	userToken := fmt.Sprintf("Bearer %s", cookie.Value)
-	database.Repo.NewUser(&user)
+	newUserErr := database.Repo.NewUser(&user)
+	if newUserErr != nil {
+		log.Println("New User Error", newUserErr)
+	}
 
 	subUserID := uuid.New()
 	subCookie, subCookieExp := GenerateCookie(subUserID)
