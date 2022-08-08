@@ -14,7 +14,8 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-// Дополнительный обработчик ответа
+// messageResponse additional respond generator
+// useful in case of error handling in outputting results to respond
 func messageResponse(w http.ResponseWriter, message, ContentType string, httpStatusCode int) {
 	w.Header().Set("Content-Type", ContentType)
 	w.WriteHeader(httpStatusCode)
@@ -27,8 +28,7 @@ func messageResponse(w http.ResponseWriter, message, ContentType string, httpSta
 	w.Write(jsonResp)
 }
 
-// Обработка сжатых запросов
-// TODO вынести в middleware
+// readBodyBytes compressed request processing function
 func readBodyBytes(r *http.Request) (io.ReadCloser, error) {
 	// GZIP decode
 	if len(r.Header["Content-Encoding"]) > 0 && r.Header["Content-Encoding"][0] == "gzip" {
@@ -52,8 +52,11 @@ func readBodyBytes(r *http.Request) (io.ReadCloser, error) {
 	}
 }
 
+// gzipContentTypes request types that support data compression
 var gzipContentTypes = "application/x-gzip, application/javascript, application/json, text/css, text/html, text/plain, text/xml"
 
+// MyHandler - the main handler of the server
+// contains middlewares and all routes
 func MyHandler(database *app.Database) *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
@@ -63,6 +66,7 @@ func MyHandler(database *app.Database) *chi.Mux {
 	r.Use(middleware.AllowContentEncoding("gzip"))
 	r.Use(middleware.AllowContentType("application/json", "text/plain", "application/x-gzip"))
 	r.Use(middleware.Compress(5, gzipContentTypes))
+	r.Mount("/debug", middleware.Profiler())
 	r.Post("/api/user/register", UserRegistration(database))
 	r.Post("/api/user/login", UserAuthentication(database))
 	r.Post("/api/user/orders", PostOrder(database))

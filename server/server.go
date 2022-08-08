@@ -12,10 +12,12 @@ import (
 	"time"
 )
 
+// Server implementation of custom server
 type Server struct {
 	httpServer *http.Server
 }
 
+// NewServer Initializing new server instance
 func NewServer(cfg *models.Config, database *app.Database) *Server {
 
 	handler := handlers.MyHandler(database)
@@ -30,6 +32,7 @@ func NewServer(cfg *models.Config, database *app.Database) *Server {
 	}
 }
 
+// Run method that starts the server
 func (a *Server) Run() error {
 	addr := a.httpServer.Addr
 	log.Printf("Web-server started at http://%s", addr)

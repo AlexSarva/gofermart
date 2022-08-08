@@ -13,13 +13,13 @@ import (
 
 func main() {
 	var cfg models.Config
-	// Приоритет будет у ФЛАГОВ
-	// Загружаем конфиг из переменных окружения
+	// Priority on flags
+	// Load config from env
 	err := env.Parse(&cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Перезаписываем из параметров запуска
+	// Rewrite from start parameters
 	flag.StringVar(&cfg.ServerAddress, "a", cfg.ServerAddress, "host:port to listen on")
 	flag.StringVar(&cfg.Database, "d", cfg.Database, "database config")
 	flag.StringVar(&cfg.AccrualSystem, "r", cfg.AccrualSystem, "address of the accrual system")
@@ -32,7 +32,7 @@ func main() {
 	ordersProcessedCh := make(chan models.ProcessingOrder)
 	go loyality.GetOrdersToProcessing(*DB, ordersToProcessingCh)
 	go loyality.GetProcessedInfo(client, ordersToProcessingCh, ordersProcessedCh)
-	go loyality.ApplyLoyality(*DB, ordersProcessedCh)
+	go loyality.ApplyLoyalty(*DB, ordersProcessedCh)
 	if dbErr != nil {
 		log.Fatal(dbErr)
 	}
