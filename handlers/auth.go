@@ -4,7 +4,6 @@ import (
 	"AlexSarva/gofermart/internal/app"
 	"AlexSarva/gofermart/models"
 	"AlexSarva/gofermart/storage/storagepg"
-	"AlexSarva/gofermart/utils"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -167,7 +166,7 @@ func UserAuthentication(database *app.Database) http.HandlerFunc {
 		// Авторизация по токену
 		generatedAt := time.Now().Format(timeLayout)
 		expiresAt := userDB.CookieExp.Format(timeLayout)
-		cookieSession, cookieSessionErr := utils.ParseCookie(userDB.Cookie)
+		cookieSession, cookieSessionErr := ParseCookie(userDB.Cookie)
 		if cookieSessionErr != nil {
 			log.Println(cookieSessionErr)
 		}

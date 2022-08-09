@@ -16,6 +16,9 @@ var ErrNotValidCookie = errors.New("valid cookie does not found")
 // ErrNoAuth error while valid Bearer token doesn't contain in request Header
 var ErrNoAuth = errors.New("no Bearer token")
 
+// ErrNoCookie error that occurs when no cookie presents in Header
+var ErrNoCookie = errors.New("no cookie")
+
 // GenerateCookie function of generating cookie for user when he successfully registered and authenticated
 // based at UserID (uuid format)
 // returns Cookie format for respond and time of expiration
@@ -58,4 +61,16 @@ func GetToken(r *http.Request) (uuid.UUID, error) {
 		return uuid.UUID{}, tokenDecryptErr
 	}
 	return userID, nil
+}
+
+// ParseCookie util that parse cookie string format into session id
+func ParseCookie(cookieStr string) (string, error) {
+	cookieInfo := strings.Split(cookieStr, "; ")
+	for _, pairs := range cookieInfo {
+		elements := strings.Split(pairs, "=")
+		if elements[0] == "session" {
+			return elements[1], nil
+		}
+	}
+	return "", ErrNoCookie
 }
