@@ -1,5 +1,6 @@
 package storagepg
 
+// ddl tables and queries for the first initializing of database
 const ddl = `
 CREATE TABLE if not exists public.users (
     id uuid primary key ,
@@ -16,8 +17,6 @@ CREATE TABLE if not exists public.orders (
      status text,
      created timestamptz default now()
 );
-delete from public.orders where user_id in (select user_id from public.users where username like 'test%');
-delete from public.users where username like 'test%';
 
 create table if not exists public.withdraw (
    user_id uuid references public.users(id),
@@ -25,7 +24,10 @@ create table if not exists public.withdraw (
    withdraw float4,
    created timestamptz default now()
 );
+
 delete from public.withdraw where user_id in (select user_id from public.users where username like 'test%');
+delete from public.orders where user_id in (select user_id from public.users where username like 'test%');
+delete from public.users where username like 'test%';
 
 create or replace view public.balance as (
  with total as (

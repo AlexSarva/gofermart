@@ -4,7 +4,6 @@ import (
 	"AlexSarva/gofermart/internal/app"
 	"AlexSarva/gofermart/models"
 	"AlexSarva/gofermart/storage/storagepg"
-	"AlexSarva/gofermart/utils"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -19,7 +18,22 @@ import (
 
 const timeLayout = "2006-01-02 15:04:05"
 
-// UserRegistration регистрация нового пользователя
+// UserRegistration - user registration method
+//
+// Handler POST /api/user/register
+//
+// Registration is performed by a pair of login/password.
+// Each login must be set.
+// After successful registration, automatic user authentication is required.
+// post message should contain such body:
+//    "login": "<login>",
+//    "password": "<password>"
+//
+// Possible response codes:
+// 200 - user successfully registered and authenticated;
+// 400 - invalid request format;
+// 409 - login is already taken;
+// 500 - an internal server error.
 func UserRegistration(database *app.Database) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		headerContentType := r.Header.Get("Content-Type")
@@ -85,7 +99,20 @@ func UserRegistration(database *app.Database) http.HandlerFunc {
 	}
 }
 
-// UserAuthentication - аутентификация пользователя
+// UserAuthentication - user authentication method
+//
+// Handler POST /api/user/login
+//
+// Authentication is performed by a login/password pair.
+// Request format:
+//    {"login": "<login>",
+//    "password": "<password>"}
+//
+// Possible response codes:
+// 200 - user successfully authenticated;
+// 400 - invalid request format;
+// 401 - invalid login/password pair;
+// 500 - an internal server error.
 func UserAuthentication(database *app.Database) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		headerContentType := r.Header.Get("Content-Type")
@@ -139,7 +166,7 @@ func UserAuthentication(database *app.Database) http.HandlerFunc {
 		// Авторизация по токену
 		generatedAt := time.Now().Format(timeLayout)
 		expiresAt := userDB.CookieExp.Format(timeLayout)
-		cookieSession, cookieSessionErr := utils.ParseCookie(userDB.Cookie)
+		cookieSession, cookieSessionErr := ParseCookie(userDB.Cookie)
 		if cookieSessionErr != nil {
 			log.Println(cookieSessionErr)
 		}

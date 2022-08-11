@@ -12,6 +12,22 @@ import (
 	"strings"
 )
 
+// GetBalance Getting the user's current balance
+//
+// Handler: GET /api/user/balance.
+//
+// The handler is available only to an authorized user.
+// The response must contain data on the current amount of loyalty points,
+// as well as the amount of points used for the entire registration period.
+//
+// Possible response codes:
+// 200 - successful processing of the request.
+// Response format:
+//   {"current": 500.5
+//    "withdrawn": 42}
+//
+// 401 - The user is not authorized.
+// 500 - an internal server error.
 func GetBalance(database *app.Database) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		headerContentType := r.Header.Get("Content-Length")
@@ -45,6 +61,24 @@ func GetBalance(database *app.Database) http.HandlerFunc {
 	}
 }
 
+// Withdraw Withdrawal Request
+//
+// Handler: POST /api/user/balance/withdraw
+//
+// The handler is available only to an authorized user.
+// The order number is a number of the user's new order, for which points are debited.
+//
+// Request format:
+// {"order": "2377225624",
+//    "sum": 751}
+//
+// Here "order" is the order number, and "sum" is the amount of points to be written off as payment.
+// Possible response codes:
+// 200 — successful request processing;
+// 401 - user is not authorized;
+// 402 - there are not enough funds on the account;
+// 422 - invalid order number;
+// 500 is an internal server error.
 func Withdraw(database *app.Database) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		headerContentType := r.Header.Get("Content-Type")
@@ -119,6 +153,24 @@ func Withdraw(database *app.Database) http.HandlerFunc {
 	}
 }
 
+// GetAllWithdraws Getting information about the withdrawal of funds
+//
+// Handler: GET /api/user/withdrawals.
+//
+// The handler is available only to an authorized user. Output facts in the output should be sorted by output time from oldest to newest. The date format is RFC3339.
+//
+// Possible response codes:
+// 200 - successful processing of the request.
+// Response format:
+// [{
+//          "order": "2377225624",
+//          sum: 500
+//          "processed_at": "2020-12-09T16:09:57+03:00"
+//      }]
+//
+// 204 - no write-offs.
+// 401 - The user is not authorized.
+// 500 - an internal server error.
 func GetAllWithdraws(database *app.Database) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		headerContentType := r.Header.Get("Content-Length")

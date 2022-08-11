@@ -17,13 +17,18 @@ import (
 	"gopkg.in/h2non/gentleman.v2/plugins/timeout"
 )
 
+// ErrInternalServer error that occurs when loyalty service doesn't work
 var ErrInternalServer = errors.New("ErrInternalServer")
+
+// ErrEmptyOrder error that occurs when get empty order
 var ErrEmptyOrder = errors.New("empty order")
 
+// ProcessingClient client for check processing in loyalty system
 type ProcessingClient struct {
 	Client *gentleman.Client
 }
 
+// NewProcessingClient generate new client for check processing in loyalty system
 func NewProcessingClient(serviceAddress, basicURL string) *ProcessingClient {
 	log.Println("LoyalityServer: ", serviceAddress+basicURL)
 	cli := gentleman.New()
@@ -36,6 +41,7 @@ func NewProcessingClient(serviceAddress, basicURL string) *ProcessingClient {
 	}
 }
 
+// GetOrder method that check order number in loyalty system and returns result of processing
 func (pc *ProcessingClient) GetOrder(orderNum string) (models.ProcessingOrder, error) {
 	req := pc.Client.Request()
 	req.Method("GET")

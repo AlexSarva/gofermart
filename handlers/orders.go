@@ -13,6 +13,24 @@ import (
 	"strings"
 )
 
+// PostOrder - Load order number
+//
+// Handler POST /api/user/orders
+//
+// The handler is available only to authenticated users.
+// The order number is a sequence of digits of arbitrary length.
+// The order number is checked for correct input using the Luhn algorithm.
+// Request format:
+// 12345678903
+//
+// Possible response codes:
+// 200 - the order number has already been uploaded by this user;
+// 202 - new order number accepted for processing;
+// 400 - invalid request format;
+// 401 - user not authenticated;
+// 409 - the order number has already been uploaded by another user;
+// 422 - invalid order number format;
+// 500 - an internal server error.
 func PostOrder(database *app.Database) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		headerContentType := r.Header.Get("Content-Type")
@@ -82,6 +100,42 @@ func PostOrder(database *app.Database) http.HandlerFunc {
 	}
 }
 
+// GetOrders Getting a list of loaded order numbers
+//
+// Handler: GET /api/user/orders.
+//
+// The handler is available only to an authorized user. Order numbers in the search results should be sorted by download time from oldest to newest. The date format is RFC3339.
+// Available settlement processing statuses:
+// NEW — the order was loaded into the system, but was not processed;
+// PROCESSING - the reward for the order is calculated;
+// INVALID — the system for calculating remuneration refused to calculate;
+// PROCESSED — order data has been checked and billing information has been successfully received.
+//
+// Possible response codes:
+// 200 - successful processing of the request.
+// Response format:
+//   [
+//       {
+//           "number": "9278923470",
+//           "status": "PROCESSED",
+//           accrual: 500
+//           "uploaded_at": "2020-12-10T15:15:45+03:00"
+//       },
+//       {
+//           "number": "12345678903",
+//           "status": "PROCESSING",
+//           "uploaded_at": "2020-12-10T15:12:01+03:00"
+//       },
+//       {
+//           "number": "346436439",
+//           "status": "INVALID",
+//           "uploaded_at": "2020-12-09T16:09:53+03:00"
+//       }
+//   ]
+//
+// 204 - No response data.
+// 401 - The user is not authorized.
+// 500 - an internal server error.
 func GetOrders(database *app.Database) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		headerContentType := r.Header.Get("Content-Length")

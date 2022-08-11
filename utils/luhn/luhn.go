@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// CalculateToLuhn return Lunh true number
+// CalculateToLuhn return Lunh true number by adding 1 digit
 func CalculateToLuhn(number int) int {
 	if Valid(number) {
 		return number
@@ -29,6 +29,7 @@ func Valid(number int) bool {
 	return (number%10+checksum(number/10))%10 == 0
 }
 
+// checksum check control sum of digits
 func checksum(number int) int {
 	var luhn int
 
